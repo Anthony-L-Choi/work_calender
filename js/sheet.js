@@ -91,10 +91,19 @@ function close() {
   current = null;
 }
 
-/** 시각 칸: 숫자와 ':'만 남기고, 숫자 4개를 치면 '0930' → '09:30'으로 바꾼다 */
-function formatTyping(input) {
+/**
+ * 시각 칸: 숫자와 ':'만 남기고, 숫자 4개를 치면 '0930' → '09:30'으로 바꾼다.
+ * 지울 때는 콜론을 다시 넣지 않고, '09:'처럼 끝에 남은 콜론은 함께 지운다
+ * @param {HTMLInputElement} input
+ * @param {boolean} deleting
+ */
+function formatTyping(input, deleting) {
   const cleaned = input.value.replace(/[^\d:]/g, '');
-  input.value = /^\d{4}$/.test(cleaned) ? `${cleaned.slice(0, 2)}:${cleaned.slice(2)}` : cleaned;
+  let next = cleaned;
+  if (deleting) next = cleaned.replace(/:$/, '');
+  else if (/^\d{4}$/.test(cleaned)) next = `${cleaned.slice(0, 2)}:${cleaned.slice(2)}`;
+  // 값이 같으면 건드리지 않아 커서 위치를 지킨다
+  if (next !== input.value) input.value = next;
 }
 
 const timeInputs = [startInput, endInput, excludeInput];
@@ -102,7 +111,10 @@ const timeInputs = [startInput, endInput, excludeInput];
 form.addEventListener('input', (event) => {
   const target = /** @type {HTMLInputElement} */ (event.target);
   if (target.name === 'leave') syncAnnual();
-  if (timeInputs.includes(target)) formatTyping(target);
+  if (timeInputs.includes(target)) {
+    const inputType = /** @type {InputEvent} */ (event).inputType ?? '';
+    formatTyping(target, inputType.startsWith('delete'));
+  }
   updatePreview();
 });
 
