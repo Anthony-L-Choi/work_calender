@@ -1,0 +1,183 @@
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --text: #1f2933;
+  --muted: #6b7280;
+  --line: #e3e6ea;
+  --primary: #2563eb;
+  --primary-soft: #dbe6fd;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --leave: #7c3aed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418;
+    --card: #1b1f24;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --line: #2d333b;
+    --primary: #60a5fa;
+    --primary-soft: #1e3a5f;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --leave: #c4b5fd;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-size: 15px;
+}
+
+button { font: inherit; color: inherit; }
+
+.topbar {
+  padding: 12px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 { margin: 0; font-size: 18px; }
+
+.main { max-width: 480px; margin: 0 auto; padding: 12px; }
+
+/* 요약 카드 */
+.summary {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+}
+.summary p { margin: 0 0 6px; }
+.summary-days { color: var(--muted); font-size: 13px; }
+.summary-filled { font-size: 22px; }
+.bar { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; margin: 8px 0 12px; }
+.bar-fill { height: 100%; width: 0; background: var(--primary); transition: width .2s; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+.summary-grid dt { color: var(--muted); font-size: 12px; }
+.summary-grid dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
+
+/* 달 이동 */
+.month-nav { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; }
+.month-nav h2 { margin: 0; font-size: 18px; }
+.month-nav button {
+  width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); cursor: pointer;
+}
+
+/* 달력 */
+.weekdays, .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.weekdays span { text-align: center; font-size: 12px; color: var(--muted); padding: 4px 0; }
+.weekdays .sun { color: var(--red); }
+.weekdays .sat { color: var(--blue); }
+
+.cell {
+  min-height: 64px;
+  padding: 4px 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.cell.empty { visibility: hidden; }
+.cell .day { font-size: 13px; font-weight: 600; }
+.cell .name { font-size: 9px; color: var(--red); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.cell .leave { font-size: 10px; color: var(--leave); }
+.cell .work { font-size: 12px; font-weight: 600; color: var(--primary); }
+.cell.sat .day { color: var(--blue); }
+.cell.sun .day, .cell.holiday .day { color: var(--red); }
+.cell.today { border: 2px solid var(--primary); background: var(--primary-soft); }
+.cell.off { cursor: default; background: var(--bg); opacity: .6; }
+
+/* 입력 시트 */
+.sheet {
+  margin: auto auto 0;
+  width: 100%;
+  max-width: 480px;
+  border: none;
+  border-radius: 16px 16px 0 0;
+  padding: 16px;
+  background: var(--card);
+  color: var(--text);
+}
+.sheet::backdrop { background: rgb(0 0 0 / 40%); }
+.sheet h3 { margin: 0 0 12px; font-size: 17px; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+.field input {
+  font: inherit; font-size: 16px; padding: 8px; color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+}
+.field input:disabled { opacity: .45; }
+.exclude-field { margin-top: 10px; }
+
+.leave { border: 1px solid var(--line); border-radius: 8px; margin: 12px 0 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.leave legend { font-size: 13px; color: var(--muted); }
+.leave label { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
+.leave:disabled { opacity: .45; }
+
+.hint { display: block; color: var(--muted); font-size: 12px; }
+.hint[hidden] { display: none; }
+.error { display: block; color: var(--red); font-size: 12px; min-height: 0; }
+.error:empty { display: none; }
+
+.preview { margin: 12px 0 4px; font-weight: 600; color: var(--primary); }
+
+.sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
+.sheet-actions .spacer { flex: 1; }
+.sheet-actions button {
+  padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--card); cursor: pointer;
+}
+.sheet-actions .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.sheet-actions .danger { color: var(--red); }
+.sheet-actions [hidden] { display: none; }
+
+/* 상단 바 버튼 */
+.topbar { display: flex; align-items: center; gap: 8px; }
+.topbar h1 { flex: 1; }
+.icon-btn {
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--card); cursor: pointer; font-size: 14px;
+}
+.icon-btn[hidden], .main[hidden] { display: none; }
+
+/* 설정 화면 */
+.panel {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 12px;
+}
+.panel h2 { margin: 0 0 8px; font-size: 16px; }
+.holiday-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; }
+.holiday-form input {
+  min-width: 0; font: inherit; padding: 8px; color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+}
+.panel button, .file-btn {
+  padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--card); cursor: pointer; font-size: 14px;
+}
+.panel .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.panel .danger { color: var(--red); }
+.list { list-style: none; margin: 8px 0 0; padding: 0; }
+.list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 0; border-top: 1px solid var(--line);
+}
+.list li.empty { color: var(--muted); justify-content: flex-start; }
+.list input[type="checkbox"] { width: 20px; height: 20px; }
+.backup-actions { display: flex; gap: 8px; }
+.message { margin: 8px 0 0; font-size: 13px; color: var(--muted); min-height: 1em; }
+.message.error-text { color: var(--red); }

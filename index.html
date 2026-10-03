@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <title>근무시간 계산기</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <button type="button" class="icon-btn" id="settings-back" aria-label="뒤로" hidden>←</button>
+    <h1 id="page-title">근무시간 계산기</h1>
+    <button type="button" class="icon-btn" id="settings-open">⚙ 설정</button>
+  </header>
+
+  <section class="main settings" id="settings" hidden>
+    <section class="panel">
+      <h2>사용자 휴일</h2>
+      <form class="holiday-form" id="custom-form" novalidate>
+        <input type="date" id="custom-date" aria-label="날짜">
+        <input type="text" id="custom-name" placeholder="이름 (예: 창립기념일)" aria-label="이름">
+        <button type="submit" class="primary">추가</button>
+      </form>
+      <small class="error" id="custom-error"></small>
+      <ul class="list" id="custom-list"></ul>
+    </section>
+
+    <section class="panel">
+      <h2 id="builtin-title">내장 공휴일</h2>
+      <p class="hint">체크를 끄면 그날을 영업일로 계산합니다.</p>
+      <ul class="list" id="builtin-list"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>백업</h2>
+      <div class="backup-actions">
+        <button type="button" id="export-btn">내보내기</button>
+        <label class="file-btn">가져오기<input type="file" id="import-file" accept=".json,application/json" hidden></label>
+      </div>
+      <p class="message" id="backup-message" role="status"></p>
+    </section>
+  </section>
+
+  <main class="main" id="home">
+    <section class="summary" id="summary" aria-live="polite">
+      <p class="summary-days" id="sum-days"></p>
+      <p class="summary-filled"><strong id="sum-filled"></strong></p>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="sum-bar">
+        <div class="bar-fill" id="sum-bar-fill"></div>
+      </div>
+      <dl class="summary-grid">
+        <div><dt>남은 시간</dt><dd id="sum-remaining"></dd></div>
+        <div><dt>하루 평균 필요</dt><dd id="sum-average"></dd></div>
+      </dl>
+    </section>
+
+    <nav class="month-nav">
+      <button type="button" id="prev-month" aria-label="이전 달">◀</button>
+      <h2 id="month-title"></h2>
+      <button type="button" id="next-month" aria-label="다음 달">▶</button>
+    </nav>
+
+    <div class="weekdays" aria-hidden="true">
+      <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+    </div>
+    <div class="calendar" id="calendar"></div>
+  </main>
+
+  <dialog class="sheet" id="sheet">
+    <form id="sheet-form" method="dialog" novalidate>
+      <h3 id="sheet-title"></h3>
+
+      <div class="field-row">
+        <label class="field">
+          <span>출근 (24시간)</span>
+          <input type="text" id="in-start" name="start" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="09:00">
+          <small class="error" data-error-for="start"></small>
+        </label>
+        <label class="field">
+          <span>퇴근 (24시간)</span>
+          <input type="text" id="in-end" name="end" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="18:00">
+          <small class="error" data-error-for="end"></small>
+        </label>
+      </div>
+
+      <label class="field exclude-field">
+        <span>제외 시간 · 휴게 1시간 외에 더 뺄 시간</span>
+        <input type="text" id="in-exclude" name="exclude" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00:00">
+        <small class="error" data-error-for="exclude"></small>
+      </label>
+
+      <fieldset class="leave" id="leave-set">
+        <legend>휴가</legend>
+        <label><input type="radio" name="leave" value="" checked> 없음</label>
+        <label><input type="radio" name="leave" value="annual"> 연차</label>
+      </fieldset>
+      <small class="error" data-error-for="leave"></small>
+
+      <p class="preview" id="preview">—</p>
+      <small class="error" data-error-for="form"></small>
+
+      <div class="sheet-actions">
+        <button type="button" class="danger" id="btn-delete">삭제</button>
+        <span class="spacer"></span>
+        <button type="button" id="btn-cancel">취소</button>
+        <button type="submit" class="primary" id="btn-save">저장</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
