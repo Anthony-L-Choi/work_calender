@@ -63,13 +63,9 @@ button { font: inherit; color: inherit; }
 .summary-grid dt { color: var(--muted); font-size: 12px; }
 .summary-grid dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
 
-/* 달 이동 */
-.month-nav { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; }
+/* 이번 달 제목 */
+.month-nav { margin: 16px 0 8px; text-align: center; }
 .month-nav h2 { margin: 0; font-size: 18px; }
-.month-nav button {
-  width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--card); cursor: pointer;
-}
 
 /* 달력 */
 .weekdays, .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -130,12 +126,9 @@ button { font: inherit; color: inherit; }
 }
 .field input:disabled { opacity: .45; }
 
-.hint { display: block; color: var(--muted); font-size: 12px; }
-.hint[hidden] { display: none; }
 .error { display: block; color: var(--red); font-size: 12px; min-height: 0; }
 .error:empty { display: none; }
 
-.preview { margin: 12px 0 4px; font-weight: 600; color: var(--primary); }
 
 .sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
 .sheet-actions .spacer { flex: 1; }
@@ -144,7 +137,6 @@ button { font: inherit; color: inherit; }
   background: var(--card); cursor: pointer;
 }
 .sheet-actions .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-.sheet-actions .danger { color: var(--red); }
 .sheet-actions [hidden] { display: none; }
 
 /* 상단 바 버튼 */
@@ -167,7 +159,7 @@ button { font: inherit; color: inherit; }
   min-width: 0; font: inherit; padding: 8px; color: var(--text);
   border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
 }
-.panel button, .file-btn {
+.panel button {
   padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line);
   background: var(--card); cursor: pointer; font-size: 14px;
 }
@@ -179,7 +171,3 @@ button { font: inherit; color: inherit; }
   padding: 8px 0; border-top: 1px solid var(--line);
 }
 .list li.empty { color: var(--muted); justify-content: flex-start; }
-.list input[type="checkbox"] { width: 20px; height: 20px; }
-.backup-actions { display: flex; gap: 8px; }
-.message { margin: 8px 0 0; font-size: 13px; color: var(--muted); min-height: 1em; }
-.message.error-text { color: var(--red); }

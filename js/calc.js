@@ -1,20 +1,20 @@
 // 근무시간 계산 순수 함수. 모든 값은 분 단위 정수다. DOM과 localStorage에 접근하지 않는다.
-import { monthKeys, timeToMinutes, weekdayOf } from './date.js';
+import { minutesToTime, monthKeys, timeToMinutes, weekdayOf } from './date.js';
 
-export const BREAK_MINUTES = 60;
 export const DAY_MINUTES = 8 * 60;
+// 새 날짜를 열 때 채우는 기본값 (출근 08:00, 제외 1:20)
+export const DEFAULT_START_MINUTES = 8 * 60;
+export const DEFAULT_EXCLUDE_MINUTES = 80;
 export const LEAVE_LABELS = { annual: '연차' };
 
 /**
- * 내장 공휴일 + 사용자 휴일 − 끈 공휴일 → Map(date → name)
+ * 내장 공휴일 + 사용자 휴일 → Map(date → name). 내장 공휴일은 끌 수 없고 항상 휴일이다
  * @param {{date: string, name: string}[]} builtin
  * @param {{date: string, name: string}[]} custom
- * @param {string[]} disabled
  */
-export function holidayMap(builtin, custom = [], disabled = []) {
-  const off = new Set(disabled);
+export function holidayMap(builtin, custom = []) {
   const map = new Map();
-  for (const h of builtin) if (!off.has(h.date)) map.set(h.date, h.name);
+  for (const h of builtin) map.set(h.date, h.name);
   for (const h of custom) map.set(h.date, h.name);
   return map;
 }
@@ -25,12 +25,26 @@ export function isBusinessDay(key, holidays) {
   return wd >= 1 && wd <= 5 && !holidays.has(key);
 }
 
-/** 일 근무시간 = max(0, 퇴근 − 출근 − 60분 − 제외 시간). 시각이 없으면 0 */
+/** 일 근무시간 = max(0, 퇴근 − 출근 − 제외 시간). 시각이 없으면 0 */
 export function workMinutes(start, end, excludeMinutes = 0) {
   const s = timeToMinutes(start);
   const e = timeToMinutes(end);
   if (s === null || e === null) return 0;
-  return Math.max(0, e - s - BREAK_MINUTES - (excludeMinutes || 0));
+  return Math.max(0, e - s - (excludeMinutes || 0));
+}
+
+/** 하루 필수 8시간을 채우는 퇴근 시각(분) = 출근 + 8h + 제외 시간. 하루를 넘으면 23:59로 맞춘다 */
+export function requiredEndMinutes(startMinutes, excludeMinutes) {
+  return Math.min(24 * 60 - 1, startMinutes + DAY_MINUTES + excludeMinutes);
+}
+
+/** 기본 근무 시각: 출근 08:00, 퇴근 17:20, 제외 80분 (= 일 근무 8:00) */
+export function defaultTimes() {
+  return {
+    start: minutesToTime(DEFAULT_START_MINUTES),
+    end: minutesToTime(requiredEndMinutes(DEFAULT_START_MINUTES, DEFAULT_EXCLUDE_MINUTES)),
+    excludeMinutes: DEFAULT_EXCLUDE_MINUTES,
+  };
 }
 
 /** @param {{start?: string|null, end?: string|null, excludeMinutes?: number|null}|undefined} record */

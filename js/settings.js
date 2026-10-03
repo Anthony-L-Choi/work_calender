@@ -1,22 +1,13 @@
-// 설정 화면: 사용자 휴일, 내장 공휴일 끄기, 백업. 라우터 없이 섹션 show/hide로 전환한다.
-import { parseKey, weekdayOf } from './date.js';
-import { BUILTIN_HOLIDAYS } from './holidays.js';
-import { addCustomHoliday, loadData, removeCustomHoliday, setHolidayDisabled } from './store.js';
-import { applyBackup, exportBackup, readBackup } from './backup.js';
+// 설정 화면: 사용자 휴일. 라우터 없이 섹션 show/hide로 전환한다.
+// 내장 공휴일은 항상 휴일로 계산하므로 설정에서 다루지 않는다
+import { addCustomHoliday, loadData, removeCustomHoliday } from './store.js';
 
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const $ = (id) => document.getElementById(id);
 const dateInput = /** @type {HTMLInputElement} */ ($('custom-date'));
 const nameInput = /** @type {HTMLInputElement} */ ($('custom-name'));
-const fileInput = /** @type {HTMLInputElement} */ ($('import-file'));
 
-/** @type {{year: number, onChange: () => void} | null} */
+/** @type {{onChange: () => void} | null} */
 let current = null;
-
-const label = (date) => {
-  const { month, day } = parseKey(date);
-  return `${month}/${day} (${WEEKDAYS[weekdayOf(date)]})`;
-};
 
 function item(text, control) {
   const li = document.createElement('li');
@@ -37,28 +28,12 @@ function render() {
   if (data.customHolidays.length === 0) {
     $('custom-list').append(Object.assign(document.createElement('li'), { className: 'empty', textContent: '없음' }));
   }
-
-  const year = String(current.year);
-  $('builtin-title').textContent = `${year}년 내장 공휴일`;
-  const off = new Set(data.disabledHolidays);
-  $('builtin-list').replaceChildren(...BUILTIN_HOLIDAYS.filter((h) => h.date.startsWith(year)).map((h) => {
-    const box = Object.assign(document.createElement('input'), { type: 'checkbox', checked: !off.has(h.date) });
-    box.setAttribute('aria-label', `${h.name} 사용`);
-    box.addEventListener('change', () => changed(() => setHolidayDisabled(h.date, !box.checked)));
-    return item(`${label(h.date)} ${h.name}`, box);
-  }));
 }
 
 function changed(action) {
   action();
   render();
   current?.onChange();
-}
-
-function setMessage(text, isError = false) {
-  const el = $('backup-message');
-  el.textContent = text;
-  el.classList.toggle('error-text', isError);
 }
 
 function show(settings) {
@@ -70,11 +45,10 @@ function show(settings) {
   window.scrollTo(0, 0);
 }
 
-/** @param {{year: number, onChange: () => void}} options */
-export function openSettings({ year, onChange }) {
-  current = { year, onChange };
+/** @param {{onChange: () => void}} options */
+export function openSettings({ onChange }) {
+  current = { onChange };
   $('custom-error').textContent = '';
-  setMessage('');
   render();
   show(true);
 }
@@ -96,26 +70,4 @@ $('custom-form').addEventListener('submit', (event) => {
   changed(() => addCustomHoliday(date, name));
   dateInput.value = '';
   nameInput.value = '';
-});
-
-$('export-btn').addEventListener('click', () => {
-  exportBackup();
-  setMessage('백업 파일을 내려받았습니다');
-});
-
-fileInput.addEventListener('change', async () => {
-  const file = fileInput.files?.[0];
-  fileInput.value = '';
-  if (!file) return;
-  const result = await readBackup(file);
-  if (!result.ok) {
-    setMessage(result.message, true);
-    return;
-  }
-  if (!confirm('기존 데이터를 덮어씁니다. 계속할까요?')) {
-    setMessage('가져오기를 취소했습니다');
-    return;
-  }
-  changed(() => applyBackup(result.data));
-  setMessage('백업을 가져왔습니다');
 });

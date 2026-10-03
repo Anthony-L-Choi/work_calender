@@ -1,8 +1,8 @@
-// 날짜 입력 시트: 열기/닫기, 기존 기록 채우기, 검증, 저장·삭제
-import { parseKey, weekdayOf, formatMinutes, minutesToTime, normalizeTime, timeToMinutes } from './date.js';
-import { workMinutes, BREAK_MINUTES } from './calc.js';
-import { getRecord, saveRecord, deleteRecord } from './store.js';
-import { validateRecord, timesValid } from './validate.js';
+// 날짜 입력 시트: 열기/닫기, 기존 기록 채우기, 기본값, 검증, 저장
+import { parseKey, weekdayOf, minutesToTime, normalizeTime, timeToMinutes } from './date.js';
+import { defaultTimes } from './calc.js';
+import { getRecord, saveRecord } from './store.js';
+import { validateRecord } from './validate.js';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -13,8 +13,6 @@ const startInput = /** @type {HTMLInputElement} */ ($('in-start'));
 const endInput = /** @type {HTMLInputElement} */ ($('in-end'));
 const excludeInput = /** @type {HTMLInputElement} */ ($('in-exclude'));
 const annualInput = /** @type {HTMLInputElement} */ ($('in-annual'));
-const preview = $('preview');
-const deleteButton = $('btn-delete');
 
 /** @type {{date: string, onChange: () => void} | null} */
 let current = null;
@@ -33,20 +31,6 @@ function showErrors(errors) {
     const field = /** @type {HTMLElement} */ (el).dataset.errorFor;
     el.textContent = errors[field] ?? '';
   }
-}
-
-function updatePreview() {
-  const raw = readForm();
-  // 연차일은 근무시간이 없으므로 미리보기 줄을 숨긴다
-  preview.hidden = raw.leave === 'annual';
-  if (preview.hidden) return;
-  const start = normalizeTime(raw.start);
-  const end = normalizeTime(raw.end);
-  const x = timeToMinutes(normalizeTime(raw.exclude)) ?? 0;
-  const extra = x > 0 ? `, 제외 ${formatMinutes(x)}` : '';
-  preview.textContent = timesValid(start, end)
-    ? `근무 ${formatMinutes(workMinutes(start, end, x))} (휴게 ${formatMinutes(BREAK_MINUTES)}${extra} 빼고)`
-    : '—';
 }
 
 /** 연차를 고르면 근무 시각 칸을 비우고 막는다 */
@@ -74,16 +58,27 @@ export function openSheet(date, { holidayName, onChange }) {
   $('sheet-title').textContent = `${month}월 ${day}일 (${WEEKDAYS[weekdayOf(date)]})${suffix}`;
 
   const record = getRecord(date);
-  startInput.value = record?.start ?? '';
-  endInput.value = record?.end ?? '';
-  excludeInput.value = record?.excludeMinutes ? minutesToTime(record.excludeMinutes) : '';
-  annualInput.checked = record?.leave === 'annual';
-  deleteButton.hidden = !record;
-
-  syncAnnual();
+  if (record) {
+    startInput.value = record.start ?? '';
+    endInput.value = record.end ?? '';
+    excludeInput.value = record.excludeMinutes ? minutesToTime(record.excludeMinutes) : '';
+    annualInput.checked = record.leave === 'annual';
+    syncAnnual();
+  } else {
+    fillDefaults();
+  }
   showErrors({});
-  updatePreview();
   dialog.showModal();
+}
+
+/** 기본값으로 채운다: 출근 08:00, 제외 01:20, 퇴근은 하루 8시간을 채우는 시각. 연차 체크는 푼다 */
+function fillDefaults() {
+  annualInput.checked = false;
+  syncAnnual();
+  const times = defaultTimes();
+  startInput.value = times.start;
+  endInput.value = times.end;
+  excludeInput.value = minutesToTime(times.excludeMinutes);
 }
 
 function close() {
@@ -115,7 +110,6 @@ form.addEventListener('input', (event) => {
     const inputType = /** @type {InputEvent} */ (event).inputType ?? '';
     formatTyping(target, inputType.startsWith('delete'));
   }
-  updatePreview();
 });
 
 // 칸을 벗어나면 '9:30', '930'도 '09:30'으로 맞춘다. 읽을 수 없는 값은 그대로 두고 저장할 때 오류를 보여준다
@@ -148,12 +142,10 @@ form.addEventListener('submit', (event) => {
 
 $('btn-cancel').addEventListener('click', close);
 
-deleteButton.addEventListener('click', () => {
-  if (!current || !confirm('이 날짜의 기록을 삭제할까요?')) return;
-  deleteRecord(current.date);
-  const { onChange } = current;
-  close();
-  onChange();
+// 기본값 버튼: 칸만 다시 채우고 저장은 하지 않는다 (저장을 눌러야 반영)
+$('btn-reset').addEventListener('click', () => {
+  fillDefaults();
+  showErrors({});
 });
 
 // 바깥(배경)을 누르면 닫는다

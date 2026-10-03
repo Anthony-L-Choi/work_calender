@@ -60,16 +60,16 @@
       "status": "done",
       "priority": "핵심",
       "category": "화면",
-      "title": "◀ ▶ 버튼으로 달 이동",
-      "summary": "완료: ▶를 누르면 '2026년 11월' 달력이, ◀를 두 번 누르면 '2026년 9월' 달력이 뜨고, 12월에서 ▶를 누르면 2027년 1월로 넘어간다",
+      "title": "항상 이번 달만 표시",
+      "summary": "완료: 달력 위에 ◀ ▶ 버튼이 없고 '2026년 10월'처럼 오늘이 속한 달 제목만 가운데에 보이며, 달력과 요약 카드도 그 달 기준으로만 계산된다",
       "where": "js/app.js",
       "parent": null,
       "deps": [
         "LB-102"
       ],
-      "doc": "SPEC.md §3-2",
+      "doc": "SPEC.md §3-2, §8 D23",
       "done_at": "2026-10-02",
-      "note": "현재 보고 있는 연·월은 상태 변수 하나로 관리하고, 달력과 요약 카드는 그 값으로만 다시 그린다"
+      "note": "사용자가 달 이동을 없앴다(SPEC D23). 보여줄 연·월은 render 때마다 todayKey()로 정해, 앱을 켜 둔 채 달이 바뀌어도 다음 그리기 때 새 달을 보여준다"
     },
     {
       "id": "LB-104",
@@ -118,7 +118,7 @@
       ],
       "doc": "SPEC.md §3-3, §3-4",
       "done_at": "2026-10-03",
-      "note": "시각 세 칸은 <input type=\"text\" inputmode=\"numeric\">로 같은 00:00 형식을 쓴다(출근·퇴근 24시간제, D17). <input type=\"time\">은 기기 설정에 따라 오전/오후로 보여 쓰지 않는다. 숫자 4개는 09:30처럼 콜론을 넣고, blur 때 9:30·930도 09:30으로 맞춘다"
+      "note": "시각 세 칸은 <input type=\"text\" inputmode=\"numeric\">로 같은 00:00 형식을 쓴다(출근·퇴근 24시간제, D17). <input type=\"time\">은 기기 설정에 따라 오전/오후로 보여 쓰지 않는다. 숫자 4개는 09:30처럼 콜론을 넣고, blur 때 9:30·930도 09:30으로 맞춘다. 기록이 없는 날은 출근 08:00, 제외 01:20, 퇴근 17:20(출근+8h+제외, calc.js requiredEndMinutes)으로 채워 연다(D20)"
     },
     {
       "id": "LB-107",
@@ -134,7 +134,7 @@
       ],
       "doc": "SPEC.md §4",
       "done_at": "2026-10-02",
-      "note": "저장 형식은 SPEC §4의 필드 이름(date, start, end, leave, updatedAt)을 그대로 쓰고 version: 1을 넣는다. 계산값(일 근무시간 등)은 저장하지 않는다. localStorage 접근은 store.js에서만 한다"
+      "note": "저장 형식은 SPEC §4의 필드 이름(date, start, end, excludeMinutes, leave, updatedAt)을 그대로 쓰고 version: 1을 넣는다. 계산값(일 근무시간 등)은 저장하지 않는다. localStorage 접근은 store.js에서만 한다. 이번 달 영업일 중 기록 없는 날은 app.js가 그릴 때 store.js fillMissingRecords로 기본 기록(08:00~17:20, 제외 80분)을 저장한다(SPEC D22)"
     },
     {
       "id": "LB-108",
@@ -142,7 +142,7 @@
       "priority": "핵심",
       "category": "화면",
       "title": "달력 칸에 일 근무시간 표시 (제외 시간 반영)",
-      "summary": "완료: 09:00~18:00을 저장한 날 칸에 '8:00', 09:12~18:40을 저장한 날 칸에 '8:28', 09:00~18:00에 제외 시간 30분을 저장한 날 칸에 '7:30'이 저장 직후 표시되고 채운 시간도 같은 값만큼 는다",
+      "summary": "완료: 09:00~18:00(제외 01:00)을 저장한 날 칸에 '8:00', 09:12~18:40(제외 00:00)을 저장한 날 칸에 '9:28', 09:00~18:00에 제외 00:30을 저장한 날 칸에 '8:30'이 저장 직후 표시되고 채운 시간도 같은 값만큼 는다",
       "where": "js/calc.js, js/app.js, js/sheet.js, js/store.js, index.html",
       "parent": null,
       "deps": [
@@ -151,7 +151,7 @@
       ],
       "doc": "SPEC.md §2, §4.1, §8 D16",
       "done_at": "2026-10-03",
-      "note": "일 근무시간 = max(0, 퇴근 − 출근 − 60분 − excludeMinutes). 휴게 60분은 항상 빼고, 제외 시간(분)은 시트에서 따로 입력한다. excludeMinutes가 없거나 null인 옛 기록은 0분으로 계산한다"
+      "note": "일 근무시간 = max(0, 퇴근 − 출근 − excludeMinutes). 휴게시간은 따로 빼지 않고(SPEC D19) 근무가 아닌 시간은 모두 제외 시간으로 입력한다. excludeMinutes가 없거나 null인 옛 기록은 0분으로 계산한다"
     },
     {
       "id": "LB-109",
@@ -159,7 +159,7 @@
       "priority": "핵심",
       "category": "화면",
       "title": "채운 시간과 진행률 막대",
-      "summary": "완료: 요약 카드에 '채운 시간 / 필수 시간 (%)'와 진행 막대가 보이고, 09:00~18:00을 하나 저장하면 '8:00 / 160:00 (5%)'로 바뀐다",
+      "summary": "완료: 요약 카드에 '채운 시간 / 필수 시간 (%)'와 진행 막대가 보이고, 저장소가 빈 상태로 2026년 10월에 열면 기본 기록이 채워져 '160:00 / 160:00 (100%)'이며, 한 날을 09:00~18:00(제외 00:00)으로 고치면 '161:00 / 160:00 (100%)'으로 바뀐다",
       "where": "js/calc.js, js/app.js, css/style.css",
       "parent": null,
       "deps": [
@@ -167,7 +167,7 @@
       ],
       "doc": "SPEC.md §2, §3-2",
       "done_at": "2026-10-02",
-      "note": "채운 시간은 영업일 기록만 더한다(주말·휴일은 입력 불가, D15). 진행률은 정수 %로 표시하고, 100%를 넘으면 막대는 가득 찬 상태로 두되 숫자는 실제 값을 보여준다"
+      "note": "채운 시간은 영업일 기록만 더한다(주말·휴일은 입력 불가, D15). 이번 달 기록 없는 영업일은 기본 기록으로 자동 저장된다(D22). 진행률은 정수 %로 표시하고, 100%를 넘으면 막대는 가득 찬 상태로 두되 숫자는 실제 값을 보여준다"
     },
     {
       "id": "LB-110",
@@ -183,7 +183,7 @@
       ],
       "doc": "SPEC.md §2, §8.2 A3",
       "done_at": "2026-10-02",
-      "note": "남은 시간 = max(0, 필수 − 채운 시간). 남은 영업일은 오늘 이후 영업일이고, 오늘 기록이 없으면 오늘도 넣는다. 남은 영업일이 0이면 하루 평균은 '—'로 표시한다. 지난 달과 다음 달을 볼 때도 같은 규칙을 쓴다"
+      "note": "남은 시간 = max(0, 필수 − 채운 시간). 남은 영업일은 오늘 이후 영업일이고, 오늘 기록이 없으면 오늘도 넣는다. 남은 영업일이 0이면 하루 평균은 '—'로 표시한다. 화면은 항상 이번 달만 계산한다(D23)"
     },
     {
       "id": "LB-111",
@@ -222,16 +222,16 @@
       "status": "done",
       "priority": "핵심",
       "category": "저장",
-      "title": "기록 삭제",
-      "summary": "완료: 기록이 있는 날짜의 시트에만 '삭제' 버튼이 보이고, 확인 후 삭제하면 그 칸의 표시가 사라지며 Local Storage의 records에서도 그 날짜 키가 없어진다",
-      "where": "js/sheet.js, js/store.js",
+      "title": "기록 삭제 대신 기본값 버튼",
+      "summary": "완료: 시트 아래 버튼 줄 왼쪽에 삭제 버튼 대신 '↺ 기본값' 버튼이 보이고, 누르면 연차 체크가 풀리며 세 칸이 08:00 / 17:20 / 01:20으로 바뀐다. 저장을 눌러야 기록에 반영되고, 취소하면 기존 기록이 그대로다",
+      "where": "js/sheet.js, index.html",
       "parent": null,
       "deps": [
         "LB-112"
       ],
       "doc": "SPEC.md §3-7",
       "done_at": "2026-10-02",
-      "note": "기록이 없는 날짜의 시트에는 삭제 버튼을 렌더링하지 않는다. 삭제 후 달력과 요약 카드를 함께 다시 그린다"
+      "note": "삭제 기능은 사용자가 없앴다(SPEC D21). 기본값은 calc.js의 DEFAULT_START_MINUTES·DEFAULT_EXCLUDE_MINUTES·requiredEndMinutes를 써서 새 날짜를 열 때와 같은 값으로 채운다"
     },
     {
       "id": "LB-114",
@@ -239,7 +239,7 @@
       "priority": "검증",
       "category": "검증",
       "title": "출근·퇴근 시각과 제외 시간 검증",
-      "summary": "완료: 출근만 입력하거나 퇴근이 출근보다 빠르거나 같으면(예: 18:00~09:00) 저장되지 않고 해당 칸 아래에 빨간 오류 문구가 보인다. 24:00·12:60·abc처럼 00:00~23:59가 아닌 값, 시각 없이 넣은 제외 시간, 09:00~18:00에 08:01 이상인 제외 시간도 저장되지 않는다",
+      "summary": "완료: 출근만 입력하거나 퇴근이 출근보다 빠르거나 같으면(예: 18:00~09:00) 저장되지 않고 해당 칸 아래에 빨간 오류 문구가 보인다. 24:00·12:60·abc처럼 00:00~23:59가 아닌 값, 시각 없이 넣은 제외 시간, 09:00~18:00에 09:01 이상인 제외 시간도 저장되지 않는다",
       "where": "js/validate.js, js/sheet.js",
       "parent": null,
       "deps": [
@@ -247,7 +247,7 @@
       ],
       "doc": "SPEC.md §5 입력 검증",
       "done_at": "2026-10-03",
-      "note": "검증 함수는 validate.js에 순수 함수로 두고 { field: message } 형태로 오류를 반환한다. 입력 글자는 date.js의 normalizeTime으로 HH:MM으로 맞춘 뒤 검사한다. 자정을 넘기는 근무는 지원하지 않으므로 퇴근 > 출근만 허용한다. 제외 시간은 퇴근 − 출근 − 60분을 넘을 수 없다. 가져오기 검증도 같은 규칙을 쓴다"
+      "note": "검증 함수는 validate.js에 순수 함수로 두고 { field: message } 형태로 오류를 반환한다. 입력 글자는 date.js의 normalizeTime으로 HH:MM으로 맞춘 뒤 검사한다. 자정을 넘기는 근무는 지원하지 않으므로 퇴근 > 출근만 허용한다. 제외 시간은 퇴근 − 출근을 넘을 수 없다. 가져오기 검증도 같은 규칙을 쓴다"
     },
     {
       "id": "LB-115",
@@ -286,24 +286,24 @@
       "status": "done",
       "priority": "검증",
       "category": "화면",
-      "title": "입력 중 일 근무시간 미리보기",
-      "summary": "완료: 시트에서 출근 09:12, 퇴근 18:40을 입력하면 저장하기 전에 시트 하단에 '근무 8:28 (휴게 1:00 제외)'가 실시간으로 보인다",
+      "title": "입력 시트에 미리보기 줄 두지 않기",
+      "summary": "완료: 시트에서 출근·퇴근·제외 시간을 입력하거나 연차를 체크·해제해도 근무시간 설명 줄이 보이지 않고, 저장하면 달력 칸에 일 근무시간이 표시된다",
       "where": "js/sheet.js",
       "parent": null,
       "deps": [
         "LB-114"
       ],
-      "doc": "SPEC.md §3-4",
+      "doc": "SPEC.md §3-4, §8 D18",
       "done_at": "2026-10-02",
-      "note": "미리보기 계산은 calc.js의 일 근무시간 함수를 그대로 써서 저장 후 달력 표시와 값이 어긋나지 않게 한다. 입력이 검증에 걸리면 미리보기 대신 '—'를 보여주고, 연차를 체크하면 미리보기 줄을 숨긴다"
+      "note": "사용자가 시트를 간결하게 하려고 미리보기 줄을 없앴다(SPEC D18). 일 근무시간은 calc.js 함수로 계산해 저장 후 달력 칸에만 보여준다"
     },
     {
       "id": "LB-118",
       "status": "done",
       "priority": "나중",
       "category": "화면",
-      "title": "설정 화면 진입과 내장 공휴일 목록",
-      "summary": "완료: 메인 화면의 ⚙ 버튼을 누르면 설정 화면이 열리고, 보고 있는 연도의 내장 공휴일 목록(날짜·이름)이 보이며, 뒤로 버튼으로 메인으로 돌아온다",
+      "title": "설정 화면 진입과 뒤로 가기",
+      "summary": "완료: 메인 화면의 ⚙ 버튼을 누르면 설정 화면(사용자 휴일·백업)이 열리고, 뒤로 버튼으로 메인으로 돌아온다. 내장 공휴일 목록은 보이지 않는다",
       "where": "index.html, js/settings.js, css/style.css",
       "parent": null,
       "deps": [
@@ -335,47 +335,47 @@
       "status": "done",
       "priority": "나중",
       "category": "저장",
-      "title": "내장 공휴일 끄기",
-      "summary": "완료: 설정에서 10/9 한글날을 끄면 10월 달력에서 공휴일 표시가 사라지고 필수 시간이 8시간 늘어나며, 다시 켜면 원래대로 돌아온다",
-      "where": "js/settings.js, js/store.js",
+      "title": "내장 공휴일은 끌 수 없음",
+      "summary": "완료: 설정에 내장 공휴일 목록과 끄기 체크가 없고, 10/9 한글날은 항상 휴일로 표시되며 10월 필수 시간은 160h다",
+      "where": "index.html, js/settings.js, js/store.js, js/calc.js",
       "parent": null,
       "deps": [
         "LB-119"
       ],
       "doc": "SPEC.md §4.3",
       "done_at": "2026-10-03",
-      "note": "끈 날짜는 disabledHolidays 배열에 YYYY-MM-DD 문자열로만 저장하고, holidays.js 상수는 절대 수정하지 않는다"
+      "note": "내장 공휴일은 항상 영업일에서 뺀다 (SPEC D24). 저장 형식에 disabledHolidays를 두지 않는다"
     },
     {
       "id": "LB-121",
       "status": "done",
       "priority": "나중",
       "category": "저장",
-      "title": "JSON 내보내기",
-      "summary": "완료: 설정의 '내보내기'를 누르면 workcal-YYYY-MM-DD.json 파일이 다운로드되고, 열어 보면 version, records, customHolidays, disabledHolidays가 들어 있다",
-      "where": "js/backup.js, js/settings.js",
+      "title": "설정에 백업 기능 두지 않음",
+      "summary": "완료: 설정 화면에 백업(내보내기·가져오기) 칸이 없고, js/backup.js 파일이 없다",
+      "where": "index.html, js/settings.js",
       "parent": null,
       "deps": [
         "LB-118",
         "LB-107"
       ],
-      "doc": "SPEC.md §6 데이터 저장",
+      "doc": "SPEC.md §8 D25",
       "done_at": "2026-10-03",
-      "note": "Blob과 <a download>로 내려받고 서버 요청은 하지 않는다. 내용은 localStorage의 workcal.v1 값과 같아야 한다"
+      "note": "사용자가 백업이 필요 없다고 정했다 (SPEC D25). 데이터는 workcal.v1에만 있다"
     },
     {
       "id": "LB-122",
       "status": "done",
       "priority": "나중",
       "category": "저장",
-      "title": "JSON 가져오기",
-      "summary": "완료: 내보낸 JSON을 '가져오기'로 고르면 '기존 데이터를 덮어씁니다' 확인 창이 뜨고, 확인하면 달력과 요약 카드가 그 파일의 상태로 바뀐다",
-      "where": "js/backup.js, js/settings.js",
+      "title": "JSON 가져오기 없음 (D25)",
+      "summary": "완료: 가져오기 버튼과 덮어쓰기 확인 창이 없다 (SPEC D25로 백업 기능을 없앴다)",
+      "where": "index.html, js/settings.js",
       "parent": null,
       "deps": [
         "LB-121"
       ],
-      "doc": "SPEC.md §5 동작 규칙",
+      "doc": "SPEC.md §8 D25",
       "done_at": "2026-10-03",
       "note": "병합하지 않고 통째로 덮어쓴다. 취소하면 아무것도 바꾸지 않는다"
     },
@@ -384,14 +384,14 @@
       "status": "done",
       "priority": "나중",
       "category": "검증",
-      "title": "가져오기 파일 형식 검증",
-      "summary": "완료: version이 1이 아니거나 records가 없거나 JSON이 아닌 파일을 가져오면 '올바른 백업 파일이 아닙니다' 문구가 뜨고 기존 데이터가 그대로 남는다",
-      "where": "js/backup.js, js/validate.js",
+      "title": "가져오기 파일 검증 없음 (D25)",
+      "summary": "완료: js/validate.js에 백업 파일 검증(isValidBackup)이 없고 입력 시트 검증만 남는다 (SPEC D25)",
+      "where": "js/validate.js",
       "parent": null,
       "deps": [
         "LB-122"
       ],
-      "doc": "SPEC.md §5 동작 규칙",
+      "doc": "SPEC.md §8 D25",
       "done_at": "2026-10-03",
       "note": "검증을 모두 통과한 뒤에만 저장소에 쓴다(중간에 실패해도 일부만 바뀌는 일이 없게). 각 기록의 date·start·end·leave 형식도 확인한다"
     },

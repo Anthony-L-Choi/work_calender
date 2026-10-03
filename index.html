@@ -30,20 +30,6 @@
       <ul class="list" id="custom-list"></ul>
     </section>
 
-    <section class="panel">
-      <h2 id="builtin-title">내장 공휴일</h2>
-      <p class="hint">체크를 끄면 그날을 영업일로 계산합니다.</p>
-      <ul class="list" id="builtin-list"></ul>
-    </section>
-
-    <section class="panel">
-      <h2>백업</h2>
-      <div class="backup-actions">
-        <button type="button" id="export-btn">내보내기</button>
-        <label class="file-btn">가져오기<input type="file" id="import-file" accept=".json,application/json" hidden></label>
-      </div>
-      <p class="message" id="backup-message" role="status"></p>
-    </section>
   </section>
 
   <main class="main" id="home">
@@ -59,11 +45,9 @@
       </dl>
     </section>
 
-    <nav class="month-nav">
-      <button type="button" id="prev-month" aria-label="이전 달">◀</button>
+    <div class="month-nav">
       <h2 id="month-title"></h2>
-      <button type="button" id="next-month" aria-label="다음 달">▶</button>
-    </nav>
+    </div>
 
     <div class="weekdays" aria-hidden="true">
       <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
@@ -97,11 +81,10 @@
         </label>
       </div>
 
-      <p class="preview" id="preview">—</p>
       <small class="error" data-error-for="form"></small>
 
       <div class="sheet-actions">
-        <button type="button" class="danger" id="btn-delete">삭제</button>
+        <button type="button" id="btn-reset">↺ 기본값</button>
         <span class="spacer"></span>
         <button type="button" id="btn-cancel">취소</button>
         <button type="submit" class="primary" id="btn-save">저장</button>

@@ -1,20 +1,30 @@
-// 메인 화면: 요약 카드, 달 이동, 달력 그리기
-import { addMonths, formatMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
+// 메인 화면: 요약 카드, 이번 달 달력 그리기 (항상 오늘이 속한 달만 보여준다)
+import { formatMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
 import { BUILTIN_HOLIDAYS } from './holidays.js';
-import { holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
-import { loadData } from './store.js';
+import { defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
+import { fillMissingRecords, loadData } from './store.js';
 import { openSheet } from './sheet.js';
 import { openSettings } from './settings.js';
 
 const $ = (id) => document.getElementById(id);
 
-const now = parseKey(todayKey());
-/** 지금 보고 있는 연·월 */
-const view = { year: now.year, month: now.month };
+/** 보여줄 연·월 = 오늘이 속한 달. 앱을 켜 둔 채 달이 바뀌어도 다음 그리기 때 따라간다 */
+let view = parseKey(todayKey());
+
+/** 이번 달(오늘이 속한 달) 영업일 중 기록이 없는 날을 기본 근무 시각으로 저장한다 */
+function fillThisMonth() {
+  const data = loadData();
+  const holidays = holidayMap(BUILTIN_HOLIDAYS, data.customHolidays);
+  const { year, month } = parseKey(todayKey());
+  const days = monthKeys(year, month).filter((key) => isBusinessDay(key, holidays));
+  fillMissingRecords(days, defaultTimes());
+}
 
 function render() {
+  view = parseKey(todayKey());
+  fillThisMonth();
   const data = loadData();
-  const holidays = holidayMap(BUILTIN_HOLIDAYS, data.customHolidays, data.disabledHolidays);
+  const holidays = holidayMap(BUILTIN_HOLIDAYS, data.customHolidays);
   const today = todayKey();
   renderSummary(monthSummary({ ...view, records: data.records, holidays, today }));
   renderCalendar(data.records, holidays, today);
@@ -75,14 +85,7 @@ function renderCalendar(records, holidays, today) {
   }
 }
 
-function move(delta) {
-  Object.assign(view, addMonths(view.year, view.month, delta));
-  render();
-}
-
-$('prev-month').addEventListener('click', () => move(-1));
-$('next-month').addEventListener('click', () => move(1));
-$('settings-open').addEventListener('click', () => openSettings({ year: view.year, onChange: render }));
+$('settings-open').addEventListener('click', () => openSettings({ onChange: render }));
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {

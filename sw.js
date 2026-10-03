@@ -3,14 +3,13 @@
 // DOM 타입 기준으로 검사되므로 ServiceWorkerGlobalScope 대신 any로 다룬다
 /** @type {any} */
 const sw = self;
-const CACHE = 'workcal-v9';
+const CACHE = 'workcal-v16';
 const FILES = [
   './',
   'index.html',
   'manifest.webmanifest',
   'css/style.css',
   'js/app.js',
-  'js/backup.js',
   'js/calc.js',
   'js/date.js',
   'js/holidays.js',

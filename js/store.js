@@ -4,7 +4,7 @@ import { localIso } from './date.js';
 const KEY = 'workcal.v1';
 
 function empty() {
-  return { version: 1, records: {}, customHolidays: [], disabledHolidays: [] };
+  return { version: 1, records: {}, customHolidays: [] };
 }
 
 /** 저장된 전체 데이터. 없거나 깨졌으면 빈 데이터 */
@@ -36,10 +36,19 @@ export function saveRecord({ date, start, end, excludeMinutes, leave }) {
   saveData(data);
 }
 
-export function deleteRecord(date) {
+/**
+ * 기록이 없는 날짜에만 같은 근무 시각으로 기록을 만든다 (있는 기록은 건드리지 않는다). 만든 개수를 돌려준다
+ * @param {string[]} dates
+ * @param {{start: string, end: string, excludeMinutes: number}} times
+ */
+export function fillMissingRecords(dates, times) {
   const data = loadData();
-  delete data.records[date];
+  const missing = dates.filter((date) => !data.records[date]);
+  if (missing.length === 0) return 0;
+  const updatedAt = localIso();
+  for (const date of missing) data.records[date] = { date, ...times, leave: null, updatedAt };
   saveData(data);
+  return missing.length;
 }
 
 /** 같은 날짜가 있으면 이름을 바꾼다 */
@@ -55,22 +64,4 @@ export function removeCustomHoliday(date) {
   const data = loadData();
   data.customHolidays = data.customHolidays.filter((h) => h.date !== date);
   saveData(data);
-}
-
-/** 내장 공휴일 끄기/켜기. 끈 날짜만 disabledHolidays에 남긴다 */
-export function setHolidayDisabled(date, disabled) {
-  const data = loadData();
-  const rest = data.disabledHolidays.filter((d) => d !== date);
-  data.disabledHolidays = disabled ? [...rest, date].sort() : rest;
-  saveData(data);
-}
-
-/** 가져오기: 검증을 통과한 데이터로 통째로 덮어쓴다 */
-export function replaceData(data) {
-  saveData(data);
-}
-
-/** 내보내기용 원본 문자열 (localStorage 값과 같다) */
-export function rawData() {
-  return JSON.stringify(loadData(), null, 2);
 }
