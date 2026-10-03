@@ -12,22 +12,19 @@ const form = /** @type {HTMLFormElement} */ ($('sheet-form'));
 const startInput = /** @type {HTMLInputElement} */ ($('in-start'));
 const endInput = /** @type {HTMLInputElement} */ ($('in-end'));
 const excludeInput = /** @type {HTMLInputElement} */ ($('in-exclude'));
+const annualInput = /** @type {HTMLInputElement} */ ($('in-annual'));
 const preview = $('preview');
 const deleteButton = $('btn-delete');
 
 /** @type {{date: string, onChange: () => void} | null} */
 let current = null;
 
-const leaveRadios = () => /** @type {NodeListOf<HTMLInputElement>} */ (
-  form.querySelectorAll('input[name="leave"]'));
-
 function readForm() {
-  const checked = [...leaveRadios()].find((r) => r.checked);
   return {
     start: startInput.value,
     end: endInput.value,
     exclude: excludeInput.value,
-    leave: checked?.value || null,
+    leave: annualInput.checked ? 'annual' : null,
   };
 }
 
@@ -40,6 +37,9 @@ function showErrors(errors) {
 
 function updatePreview() {
   const raw = readForm();
+  // 연차일은 근무시간이 없으므로 미리보기 줄을 숨긴다
+  preview.hidden = raw.leave === 'annual';
+  if (preview.hidden) return;
   const start = normalizeTime(raw.start);
   const end = normalizeTime(raw.end);
   const x = timeToMinutes(normalizeTime(raw.exclude)) ?? 0;
@@ -77,7 +77,7 @@ export function openSheet(date, { holidayName, onChange }) {
   startInput.value = record?.start ?? '';
   endInput.value = record?.end ?? '';
   excludeInput.value = record?.excludeMinutes ? minutesToTime(record.excludeMinutes) : '';
-  for (const r of leaveRadios()) r.checked = r.value === (record?.leave ?? '');
+  annualInput.checked = record?.leave === 'annual';
   deleteButton.hidden = !record;
 
   syncAnnual();

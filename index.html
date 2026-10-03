@@ -73,33 +73,29 @@
 
   <dialog class="sheet" id="sheet">
     <form id="sheet-form" method="dialog" novalidate>
-      <h3 id="sheet-title"></h3>
+      <div class="sheet-head">
+        <h3 id="sheet-title"></h3>
+        <label class="annual-check"><input type="checkbox" id="in-annual" name="leave" value="annual"> 연차</label>
+      </div>
+      <small class="error" data-error-for="leave"></small>
 
       <div class="field-row">
         <label class="field">
-          <span>출근 (24시간)</span>
+          <span>출근시간</span>
           <input type="text" id="in-start" name="start" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="09:00">
           <small class="error" data-error-for="start"></small>
         </label>
         <label class="field">
-          <span>퇴근 (24시간)</span>
+          <span>퇴근시간</span>
           <input type="text" id="in-end" name="end" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="18:00">
           <small class="error" data-error-for="end"></small>
         </label>
+        <label class="field">
+          <span>제외시간</span>
+          <input type="text" id="in-exclude" name="exclude" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00:00">
+          <small class="error" data-error-for="exclude"></small>
+        </label>
       </div>
-
-      <label class="field exclude-field">
-        <span>제외 시간 · 휴게 1시간 외에 더 뺄 시간</span>
-        <input type="text" id="in-exclude" name="exclude" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00:00">
-        <small class="error" data-error-for="exclude"></small>
-      </label>
-
-      <fieldset class="leave" id="leave-set">
-        <legend>휴가</legend>
-        <label><input type="radio" name="leave" value="" checked> 없음</label>
-        <label><input type="radio" name="leave" value="annual"> 연차</label>
-      </fieldset>
-      <small class="error" data-error-for="leave"></small>
 
       <p class="preview" id="preview">—</p>
       <small class="error" data-error-for="form"></small>

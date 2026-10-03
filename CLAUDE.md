@@ -20,6 +20,7 @@
 - `tools/build.mjs` — `npm run build`의 참조 파일 검사 기준이다.
 - `tools/serve.mjs` — `npm run dev` 개발 서버이며 `.js`를 `text/javascript`로 보낸다.
 - `tools/make-icons.mjs` — `icons/icon-192.png`, `icon-512.png`를 다시 그리는 스크립트다 (`node tools/make-icons.mjs`).
+- `.github/workflows/pages.yml` — main에 push하면 앱 파일(`index.html`, `manifest.webmanifest`, `sw.js`, `css/`, `js/`, `icons/`)만 GitHub Pages에 배포한다. 앱 파일을 새로 만들면 이 목록과 `sw.js`의 FILES에도 넣는다.
 - `eslint.config.js` — lint 규칙과 검사 범위의 기준이다.
 - `jsconfig.json` — 타입 검사 옵션과 대상 파일의 기준이다.
 - `.claude/settings.json` — 등록된 hook(PreToolUse, Stop)의 기준이다.

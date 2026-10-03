@@ -114,19 +114,21 @@ button { font: inherit; color: inherit; }
 .sheet::backdrop { background: rgb(0 0 0 / 40%); }
 .sheet h3 { margin: 0 0 12px; font-size: 17px; }
 
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+/* 제목 줄: 날짜 왼쪽, 연차 체크박스 오른쪽 */
+.sheet-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+.sheet .sheet-head h3 { margin: 0; }
+.annual-check { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; }
+.annual-check input { width: 20px; height: 20px; margin: 0; accent-color: var(--primary); }
+
+/* 출근·퇴근·제외 세 칸을 한 줄에 같은 폭으로 */
+.field-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); text-align: center; }
 .field input {
-  font: inherit; font-size: 16px; padding: 8px; color: var(--text);
+  width: 100%; font: inherit; font-size: 17px; padding: 9px 0; color: var(--text);
   border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+  text-align: center; font-variant-numeric: tabular-nums;
 }
 .field input:disabled { opacity: .45; }
-.exclude-field { margin-top: 10px; }
-
-.leave { border: 1px solid var(--line); border-radius: 8px; margin: 12px 0 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
-.leave legend { font-size: 13px; color: var(--muted); }
-.leave label { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
-.leave:disabled { opacity: .45; }
 
 .hint { display: block; color: var(--muted); font-size: 12px; }
 .hint[hidden] { display: none; }
