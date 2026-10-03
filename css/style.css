@@ -88,6 +88,9 @@ button { font: inherit; color: inherit; }
 }
 .cell.empty { visibility: hidden; }
 .cell .day { font-size: 13px; font-weight: 600; }
+/* 날짜 숫자는 위에 두고, 나머지 줄(휴일 이름·연차·시간)은 남은 공간 가운데에 */
+.cell .day + span { margin-top: auto; }
+.cell span:last-child:not(.day) { margin-bottom: auto; }
 .cell .name { font-size: 9px; color: var(--red); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .cell .leave { font-size: 10px; color: var(--leave); }
 .cell .work { font-size: 12px; font-weight: 600; color: var(--primary); }

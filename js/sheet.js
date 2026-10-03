@@ -126,9 +126,18 @@ form.addEventListener('input', (event) => {
   }
 });
 
-// 칸을 벗어나면 '9:30', '930'도 '09:30'으로 맞춘다. 읽을 수 없는 값은 그대로 두고 저장할 때 오류를 보여준다
+// 칸을 누르면 비워서 처음부터 치게 하고, 원래 값은 안내 글자로 보여준다
+// 칸을 벗어날 때 비어 있으면 원래 값으로 되돌리고, '9:30', '930'도 '09:30'으로 맞춘다.
+// 읽을 수 없는 값은 그대로 두고 저장할 때 오류를 보여준다
 for (const input of timeInputs) {
+  input.addEventListener('focus', () => {
+    input.dataset.prev = input.value;
+    input.placeholder = input.value || '00:00';
+    input.value = '';
+  });
   input.addEventListener('blur', () => {
+    if (input.value === '') input.value = input.dataset.prev ?? '';
+    input.placeholder = '00:00';
     const normalized = normalizeTime(input.value);
     if (normalized) input.value = normalized;
   });
