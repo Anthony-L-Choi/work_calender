@@ -105,12 +105,12 @@ button { font: inherit; color: inherit; }
 
 /* 입력 시트 */
 .sheet {
-  margin: auto auto 0;
+  margin: 0 auto auto;
   width: 100%;
   max-width: 480px;
   border: none;
-  border-radius: 16px 16px 0 0;
-  padding: 16px 16px calc(16px + var(--inset-bottom));
+  border-radius: 0 0 16px 16px;
+  padding: calc(16px + var(--inset-top)) 16px 16px;
   background: var(--card);
   color: var(--text);
 }
