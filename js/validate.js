@@ -30,9 +30,9 @@ export function validateRecord({ start, end, exclude, leave }) {
     errors.exclude = '제외 시간이 출근~퇴근 사이 시간보다 깁니다';
   }
 
-  if (leave && leave !== 'annual') errors.leave = '휴가는 연차만 지정할 수 있습니다';
-  if (leave === 'annual' && (s !== null || e !== null)) {
-    errors.form = '연차인 날에는 근무 시각을 입력할 수 없습니다';
+  if (leave && leave !== 'annual' && leave !== 'dday') errors.leave = '연차 또는 D-Day만 지정할 수 있습니다';
+  if (leave && (s !== null || e !== null)) {
+    errors.form = '연차·D-Day인 날에는 근무 시각을 입력할 수 없습니다';
   } else if (s === null && e === null && !leave) {
     errors.form = '근무 시각 또는 휴가를 입력하세요';
   }

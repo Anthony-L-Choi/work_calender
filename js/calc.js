@@ -1,11 +1,12 @@
 // 근무시간 계산 순수 함수. 모든 값은 분 단위 정수다. DOM과 localStorage에 접근하지 않는다.
-import { minutesToTime, monthKeys, timeToMinutes, weekdayOf } from './date.js';
+import { minutesToTime, monthKeys, timeToMinutes, toKey, weekdayOf } from './date.js';
 
 export const DAY_MINUTES = 8 * 60;
 // 새 날짜를 열 때 채우는 기본값 (출근 08:00, 제외 1:20)
 export const DEFAULT_START_MINUTES = 8 * 60;
 export const DEFAULT_EXCLUDE_MINUTES = 80;
-export const LEAVE_LABELS = { annual: '연차' };
+// annual: 필수 시간에서 8h를 뺀다. dday: 근무 0이지만 필수 시간은 그대로다
+export const LEAVE_LABELS = { annual: '연차', dday: 'D-Day' };
 
 /**
  * 내장 공휴일 + 사용자 휴일 → Map(date → name). 내장 공휴일은 끌 수 없고 항상 휴일이다
@@ -23,6 +24,19 @@ export function holidayMap(builtin, custom = []) {
 export function isBusinessDay(key, holidays) {
   const wd = weekdayOf(key);
   return wd >= 1 && wd <= 5 && !holidays.has(key);
+}
+
+/**
+ * 그 달의 D-Day: 21일이 있는 주(월~일)의 금요일. 그 금요일이 휴일이면 한 주씩 앞 금요일로 옮긴다
+ * @returns {string|null} 달 안에서 찾지 못하면 null
+ */
+export function dDayKey(year, month, holidays) {
+  const mondayOffset = (weekdayOf(toKey(year, month, 21)) + 6) % 7;
+  for (let day = 21 - mondayOffset + 4; day >= 1; day -= 7) {
+    const key = toKey(year, month, day);
+    if (isBusinessDay(key, holidays)) return key;
+  }
+  return null;
 }
 
 /** 일 근무시간 = max(0, 퇴근 − 출근 − 제외 시간). 시각이 없으면 0 */

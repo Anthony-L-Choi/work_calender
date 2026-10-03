@@ -190,16 +190,16 @@
       "status": "done",
       "priority": "핵심",
       "category": "저장",
-      "title": "휴가 저장과 필수 시간 차감",
-      "summary": "완료: 평일에 연차를 저장하면 필수 시간이 160:00 → 152:00으로 줄고, 그날이 하루 평균 계산의 남은 영업일에서 빠지며, 달력 칸에 '연차'가 표시된다",
-      "where": "js/sheet.js, js/calc.js, js/app.js",
+      "title": "휴가(연차·D-Day) 저장과 필수 시간 반영",
+      "summary": "완료: 평일에 연차를 저장하면 필수 시간이 160:00 → 152:00으로 줄고 남은 영업일에서 빠지며 달력에 '연차'가 표시된다. 10/23(금)에 D-Day를 저장하면 필수 160:00은 그대로, 채운 시간이 152:00이 되고 달력에 'D-Day'가 표시된다",
+      "where": "index.html, css/style.css, js/sheet.js, js/calc.js, js/app.js, js/validate.js",
       "parent": null,
       "deps": [
         "LB-110"
       ],
-      "doc": "SPEC.md §2, §4.1",
+      "doc": "SPEC.md §2, §3, §4.1, D26",
       "done_at": "2026-10-02",
-      "note": "leave 값은 'annual' | null만 쓴다(반차·반반차 없음, D14). 필수 시간은 연차일 수 × 8h를 빼고, 연차일은 남은 영업일에서도 뺀다(D13)"
+      "note": "leave 값은 'annual' | 'dday' | null만 쓴다(D14, D26). 연차는 필수 시간에서 8h를 빼고 남은 영업일에서도 뺀다(D13). D-Day는 calc.js dDayKey가 정한 날에만 고르며 필수 시간·남은 영업일을 바꾸지 않는다"
     },
     {
       "id": "LB-112",

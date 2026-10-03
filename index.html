@@ -59,7 +59,10 @@
     <form id="sheet-form" method="dialog" novalidate>
       <div class="sheet-head">
         <h3 id="sheet-title"></h3>
-        <label class="annual-check"><input type="checkbox" id="in-annual" name="leave" value="annual"> 연차</label>
+        <div class="leave-checks">
+          <label class="leave-check" id="dday-check" hidden><input type="checkbox" id="in-dday" name="leave" value="dday">D-Day</label>
+          <label class="leave-check"><input type="checkbox" id="in-annual" name="leave" value="annual">연차</label>
+        </div>
       </div>
       <small class="error" data-error-for="leave"></small>
 

@@ -13,6 +13,7 @@ const startInput = /** @type {HTMLInputElement} */ ($('in-start'));
 const endInput = /** @type {HTMLInputElement} */ ($('in-end'));
 const excludeInput = /** @type {HTMLInputElement} */ ($('in-exclude'));
 const annualInput = /** @type {HTMLInputElement} */ ($('in-annual'));
+const ddayInput = /** @type {HTMLInputElement} */ ($('in-dday'));
 
 /** @type {{date: string, onChange: () => void} | null} */
 let current = null;
@@ -22,7 +23,7 @@ function readForm() {
     start: startInput.value,
     end: endInput.value,
     exclude: excludeInput.value,
-    leave: annualInput.checked ? 'annual' : null,
+    leave: annualInput.checked ? 'annual' : ddayInput.checked ? 'dday' : null,
   };
 }
 
@@ -33,37 +34,40 @@ function showErrors(errors) {
   }
 }
 
-/** 연차를 고르면 근무 시각 칸을 비우고 막는다 */
-function syncAnnual() {
-  const annual = readForm().leave === 'annual';
-  if (annual) {
+/** 연차나 D-Day를 고르면 근무 시각 칸을 비우고 막는다 */
+function syncLeave() {
+  const off = readForm().leave !== null;
+  if (off) {
     startInput.value = '';
     endInput.value = '';
     excludeInput.value = '';
   }
-  startInput.disabled = annual;
-  endInput.disabled = annual;
-  excludeInput.disabled = annual;
+  startInput.disabled = off;
+  endInput.disabled = off;
+  excludeInput.disabled = off;
 }
 
 /**
  * 영업일에만 연다 (주말·휴일 칸은 달력에서 누를 수 없다)
  * @param {string} date
- * @param {{holidayName?: string, onChange: () => void}} options
+ * @param {{holidayName?: string, isDDay?: boolean, onChange: () => void}} options
  */
-export function openSheet(date, { holidayName, onChange }) {
+export function openSheet(date, { holidayName, isDDay = false, onChange }) {
   current = { date, onChange };
   const { month, day } = parseKey(date);
   const suffix = holidayName ? ` · ${holidayName}` : '';
   $('sheet-title').textContent = `${month}월 ${day}일 (${WEEKDAYS[weekdayOf(date)]})${suffix}`;
 
   const record = getRecord(date);
+  // D-Day 체크는 그 달 D-Day에만 보인다. 예전에 D-Day로 저장한 날은 풀 수 있게 보여준다
+  $('dday-check').hidden = !(isDDay || record?.leave === 'dday');
   if (record) {
     startInput.value = record.start ?? '';
     endInput.value = record.end ?? '';
     excludeInput.value = record.excludeMinutes ? minutesToTime(record.excludeMinutes) : '';
     annualInput.checked = record.leave === 'annual';
-    syncAnnual();
+    ddayInput.checked = record.leave === 'dday';
+    syncLeave();
   } else {
     fillDefaults();
   }
@@ -71,10 +75,15 @@ export function openSheet(date, { holidayName, onChange }) {
   dialog.showModal();
 }
 
-/** 기본값으로 채운다: 출근 08:00, 제외 01:20, 퇴근은 하루 8시간을 채우는 시각. 연차 체크는 푼다 */
+/** 기본값으로 채운다: 출근 08:00, 제외 01:20, 퇴근은 하루 8시간을 채우는 시각. 연차·D-Day 선택은 푼다 */
 function fillDefaults() {
   annualInput.checked = false;
-  syncAnnual();
+  ddayInput.checked = false;
+  syncLeave();
+  fillDefaultTimes();
+}
+
+function fillDefaultTimes() {
   const times = defaultTimes();
   startInput.value = times.start;
   endInput.value = times.end;
@@ -105,7 +114,12 @@ const timeInputs = [startInput, endInput, excludeInput];
 
 form.addEventListener('input', (event) => {
   const target = /** @type {HTMLInputElement} */ (event.target);
-  if (target.name === 'leave') syncAnnual();
+  if (target.name === 'leave') {
+    // 연차와 D-Day는 하나만 고른다. 고른 칸을 다시 눌러 풀면 세 칸을 기본값으로 채운다
+    if (target.checked) (target === annualInput ? ddayInput : annualInput).checked = false;
+    syncLeave();
+    if (!target.checked) fillDefaultTimes();
+  }
   if (timeInputs.includes(target)) {
     const inputType = /** @type {InputEvent} */ (event).inputType ?? '';
     formatTyping(target, inputType.startsWith('delete'));

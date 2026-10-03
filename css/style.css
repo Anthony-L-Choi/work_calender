@@ -113,8 +113,16 @@ button { font: inherit; color: inherit; }
 /* 제목 줄: 날짜 왼쪽, 연차 체크박스 오른쪽 */
 .sheet-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }
 .sheet .sheet-head h3 { margin: 0; }
-.annual-check { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; }
-.annual-check input { width: 20px; height: 20px; margin: 0; accent-color: var(--primary); }
+/* 연차·D-Day: 글자 칸을 눌러 켜고 끈다. 체크박스는 숨기고 칸 색으로 상태를 보인다 */
+.leave-checks { display: flex; gap: 8px; }
+.leave-check {
+  position: relative; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card); color: var(--muted); font-size: 15px; cursor: pointer; user-select: none;
+}
+.leave-check[hidden] { display: none; }
+.leave-check input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.leave-check:has(input:checked) { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.leave-check:has(input:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* 출근·퇴근·제외 세 칸을 한 줄에 같은 폭으로 */
 .field-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }

@@ -1,7 +1,7 @@
 // 메인 화면: 요약 카드, 이번 달 달력 그리기 (항상 오늘이 속한 달만 보여준다)
 import { formatMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
 import { BUILTIN_HOLIDAYS } from './holidays.js';
-import { defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
+import { dDayKey, defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
 import { fillMissingRecords, loadData } from './store.js';
 import { openSheet } from './sheet.js';
 import { openSettings } from './settings.js';
@@ -46,6 +46,7 @@ function renderCalendar(records, holidays, today) {
   const grid = $('calendar');
   grid.replaceChildren();
   const keys = monthKeys(view.year, view.month);
+  const dday = dDayKey(view.year, view.month, holidays);
 
   for (let i = 0; i < weekdayOf(keys[0]); i += 1) {
     grid.append(Object.assign(document.createElement('span'), { className: 'cell empty' }));
@@ -76,7 +77,7 @@ function renderCalendar(records, holidays, today) {
 
     // 주말·휴일은 누를 수 없다
     if (businessDay) {
-      cell.addEventListener('click', () => openSheet(key, { holidayName, onChange: render }));
+      cell.addEventListener('click', () => openSheet(key, { holidayName, isDDay: key === dday, onChange: render }));
     } else {
       cell.disabled = true;
       cell.classList.add('off');
