@@ -9,9 +9,13 @@
     "lint": "eslint .",
     "typecheck": "tsc -p jsconfig.json",
     "build": "node tools/build.mjs",
-    "backlog": "node tools/backlog.mjs"
+    "backlog": "node tools/backlog.mjs",
+    "android:sync": "node tools/copy-web.mjs && cap sync android"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.4",
     "eslint": "^10.11.0",

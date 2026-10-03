@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 // 앱 아이콘(icons/icon-192.png, icon-512.png)을 Node 표준 기능만으로 그린다.
+// android/ 폴더가 있으면 APK 런처 아이콘과 시작 화면(splash)도 같은 그림으로 다시 그린다.
 //   node tools/make-icons.mjs
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { deflateSync, crc32 } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'icons');
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const OUT = join(ROOT, 'icons');
+const ANDROID_RES = join(ROOT, 'android', 'app', 'src', 'main', 'res');
 
 const BLUE = [37, 99, 235];
 const WHITE = [255, 255, 255];
@@ -54,13 +57,23 @@ function colorAt(x, y) {
   return BLUE;
 }
 
-function png(size) {
-  const raw = Buffer.alloc((size * 3 + 1) * size);
-  for (let py = 0; py < size; py += 1) {
-    const row = py * (size * 3 + 1);
+/**
+ * 가로 width, 세로 height PNG. 아이콘 그림은 가운데 정사각형(짧은 변 × scale)에 그리고 바깥은 파란 배경
+ * @param {number} width
+ * @param {number} height
+ * @param {number} [scale]
+ */
+function png(width, height = width, scale = 1) {
+  const side = Math.min(width, height) * scale;
+  const raw = Buffer.alloc((width * 3 + 1) * height);
+  for (let py = 0; py < height; py += 1) {
+    const row = py * (width * 3 + 1);
     raw[row] = 0; // filter: none
-    for (let px = 0; px < size; px += 1) {
-      const [r, g, b] = colorAt((px + 0.5) / size, (py + 0.5) / size);
+    for (let px = 0; px < width; px += 1) {
+      const u = 0.5 + (px + 0.5 - width / 2) / side;
+      const v = 0.5 + (py + 0.5 - height / 2) / side;
+      const inside = u >= 0 && u <= 1 && v >= 0 && v <= 1;
+      const [r, g, b] = inside ? colorAt(u, v) : BLUE;
       raw.set([r, g, b], row + 1 + px * 3);
     }
   }
@@ -73,8 +86,8 @@ function png(size) {
     return Buffer.concat([len, body, crc]);
   };
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(size, 0);
-  header.writeUInt32BE(size, 4);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
   header.set([8, 2, 0, 0, 0], 8); // 8bit, RGB
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
@@ -88,4 +101,18 @@ mkdirSync(OUT, { recursive: true });
 for (const size of [192, 512]) {
   writeFileSync(join(OUT, `icon-${size}.png`), png(size));
   console.log(`icons/icon-${size}.png`);
+}
+
+// APK: Capacitor가 만든 기본 그림을 같은 크기로 덮어쓴다 (크기는 기존 PNG 헤더에서 읽는다)
+if (existsSync(ANDROID_RES)) {
+  for (const dir of readdirSync(ANDROID_RES)) {
+    for (const name of ['ic_launcher.png', 'ic_launcher_round.png', 'ic_launcher_foreground.png', 'splash.png']) {
+      const file = join(ANDROID_RES, dir, name);
+      if (!existsSync(file)) continue;
+      const head = readFileSync(file).subarray(16, 24);
+      const [w, h] = [head.readUInt32BE(0), head.readUInt32BE(4)];
+      writeFileSync(file, png(w, h, name === 'splash.png' ? 0.45 : 1));
+    }
+  }
+  console.log('android/app/src/main/res: 런처 아이콘·splash');
 }

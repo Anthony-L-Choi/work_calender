@@ -88,7 +88,8 @@ function renderCalendar(records, holidays, today) {
 
 $('settings-open').addEventListener('click', () => openSettings({ onChange: render }));
 
-if ('serviceWorker' in navigator) {
+// APK(Capacitor)에서는 앱 파일이 이미 APK 안에 있어 오프라인 캐시가 필요 없다
+if ('serviceWorker' in navigator && !('Capacitor' in window)) {
   navigator.serviceWorker.register('./sw.js').catch(() => {
     // 등록 실패(예: http 원격 주소)해도 앱은 그대로 동작한다
   });

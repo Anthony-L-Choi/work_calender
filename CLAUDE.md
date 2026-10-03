@@ -6,6 +6,8 @@
 - `npm run lint` — ESLint로 `js/`, `sw.js`, `tools/`, `.claude/hooks/`의 JS를 검사하고 오류가 없으면 exit 0이다.
 - `npm run typecheck` — `tsc -p jsconfig.json`으로 JS 타입을 검사하고 오류가 없으면 exit 0이다.
 - `npm run build` — `index.html`과 manifest가 참조하는 로컬 파일이 모두 있는지 확인한다 (번들링하지 않음).
+- `npm run android:sync` — 앱 파일을 `www/`로 복사하고 `cap sync android`로 `android/`에 넣는다 (APK 빌드 전 단계, CI가 실행한다).
+- APK 배포 — `git tag v1.2.3 && git push origin v1.2.3` 또는 Actions의 "Build Android APK"를 버전을 넣어 실행하면 Release에 `workcal-1.2.3.apk`가 올라간다. 버전은 이전보다 커야 덮어쓰기 설치가 된다.
 - `npm run backlog -- list` — 작업을 `id 상태 제목` 순서로 한 줄씩 출력한다.
 - `npm run backlog -- show <id>` — 작업 하나의 모든 필드(summary, note, where 등)를 출력한다.
 - `npm run backlog -- set <id> <status>` — 작업 상태를 바꿔 저장하고, enums에 없는 상태는 거부한다.
@@ -21,6 +23,9 @@
 - `tools/serve.mjs` — `npm run dev` 개발 서버이며 `.js`를 `text/javascript`로 보낸다.
 - `tools/make-icons.mjs` — `icons/icon-192.png`, `icon-512.png`를 다시 그리는 스크립트다 (`node tools/make-icons.mjs`).
 - `.github/workflows/pages.yml` — main에 push하면 앱 파일(`index.html`, `manifest.webmanifest`, `sw.js`, `css/`, `js/`, `icons/`)만 GitHub Pages에 배포한다. 앱 파일을 새로 만들면 이 목록과 `sw.js`의 FILES에도 넣는다.
+- `.github/workflows/android.yml` — 태그(`v*`)나 수동 실행 때 서명된 APK를 빌드해 GitHub Release에 올린다. 서명 키는 Secrets(`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`)에만 있고 저장소에 넣지 않는다.
+- `capacitor.config.json`, `android/` — APK 래퍼(Capacitor). `android/`는 Capacitor가 만든 프로젝트이며 버전·서명 설정은 `android/app/build.gradle`에 있다. 아이콘을 바꾸면 `node tools/make-icons.mjs`가 런처 아이콘·splash도 다시 그린다.
+- `tools/copy-web.mjs` — APK에 넣을 앱 파일을 `www/`(git 제외)로 복사한다. 앱 파일을 새로 만들면 여기 목록에도 넣는다.
 - `eslint.config.js` — lint 규칙과 검사 범위의 기준이다.
 - `jsconfig.json` — 타입 검사 옵션과 대상 파일의 기준이다.
 - `.claude/settings.json` — 등록된 hook(PreToolUse, Stop)의 기준이다.
@@ -51,4 +56,5 @@
 - backlog 명령이 실패하면 `npm run backlog -- validate` 출력의 문제 목록부터 고친다.
 - 도구 호출이 "백로그는 tools/backlog.mjs로만…"으로 막히면 guard hook이 정상 동작한 것이니 backlog 명령을 쓴다.
 - Stop hook이 종료를 막으면 reason에 나온 `[lint]`/`[build]`/`[typecheck]`/`[length]` 항목을 고친 뒤 해당 npm 명령을 직접 다시 실행한다.
+- APK 빌드가 서명 단계에서 실패하면 GitHub Secrets 세 개가 있는지(`gh secret list`) 확인한다. 서명 키 원본은 저장소 밖 `C:\Users\hh\workcal-signing\`에 있다.
 - hook이 동작하지 않으면 `node --version`이 출력되는지와 `.claude/settings.json`이 올바른 JSON인지 확인한다.

@@ -1,0 +1,62 @@
+# APK 빌드: v1.2.3 태그를 푸시하거나 Actions에서 버전을 넣고 실행하면 서명된 APK를 Release에 올린다.
+# 서명 키는 GitHub Secrets(ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS)에서 꺼낸다
+name: Build Android APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '버전 (예: 1.0.1) — 이전보다 커야 덮어쓰기 설치가 된다'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version from tag or input
+        id: ver
+        env:
+          INPUT: ${{ inputs.version }}
+        run: |
+          v="${INPUT:-${GITHUB_REF_NAME#v}}"
+          if ! [[ "$v" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then echo "버전은 1.2.3 형식이어야 합니다: $v"; exit 1; fi
+          echo "name=$v" >> "$GITHUB_OUTPUT"
+          echo "code=$(( BASH_REMATCH[1] * 10000 + BASH_REMATCH[2] * 100 + BASH_REMATCH[3] ))" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Check referenced files
+        run: node tools/build.mjs
+      - name: Copy app files into Android project
+        run: npm run android:sync
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build signed APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' | base64 -d > "$RUNNER_TEMP/release.p12"
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/release.p12"
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon \
+            -PversionCode=${{ steps.ver.outputs.code }} -PversionName=${{ steps.ver.outputs.name }}
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/workcal-${{ steps.ver.outputs.name }}.apk"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.ver.outputs.name }}
+        run: |
+          gh release create "v$VERSION" "$RUNNER_TEMP/workcal-$VERSION.apk" \
+            --target "$GITHUB_SHA" --title "근무시간 계산기 $VERSION" \
+            --notes "폰에서 APK를 받아 설치하세요. 이전 버전 위에 설치하면 기록이 그대로 남습니다."

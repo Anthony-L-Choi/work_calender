@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = process.env.CLAUDE_PROJECT_DIR || join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const MAX_LINES = 300;
 const CODE_EXT = new Set(['.js', '.mjs', '.cjs', '.ts', '.css', '.html']);
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist']);
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'www', 'android']);
 
 let raw = '';
 for await (const chunk of process.stdin) raw += chunk;
