@@ -9,6 +9,10 @@
   --red: #dc2626;
   --blue: #2563eb;
   --leave: #7c3aed;
+  /* APK(Android 15+)는 화면을 시스템 바 밑까지 그리므로 그 높이만큼 비운다.
+     Capacitor가 넣는 --safe-area-inset-* 를 먼저 쓰고, 없으면 env(), 브라우저에서는 0 */
+  --inset-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --inset-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -39,13 +43,13 @@ body {
 button { font: inherit; color: inherit; }
 
 .topbar {
-  padding: 12px 16px;
+  padding: calc(12px + var(--inset-top)) 16px 12px;
   background: var(--card);
   border-bottom: 1px solid var(--line);
 }
 .topbar h1 { margin: 0; font-size: 18px; }
 
-.main { max-width: 480px; margin: 0 auto; padding: 12px; }
+.main { max-width: 480px; margin: 0 auto; padding: 12px 12px calc(12px + var(--inset-bottom)); }
 
 /* 요약 카드 */
 .summary {
@@ -106,7 +110,7 @@ button { font: inherit; color: inherit; }
   max-width: 480px;
   border: none;
   border-radius: 16px 16px 0 0;
-  padding: 16px;
+  padding: 16px 16px calc(16px + var(--inset-bottom));
   background: var(--card);
   color: var(--text);
 }
