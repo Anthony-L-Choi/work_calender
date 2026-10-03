@@ -2,7 +2,7 @@
 
 ## 명령어
 
-- `npm run dev` — `tools/serve.mjs`(Node 정적 서버)로 앱을 http://localhost:8000 에 띄운다.
+- `npm run dev` — `tools/serve.mjs`(Node 정적 서버)로 앱을 http://localhost:8000 에 띄운다. `HOST=127.0.0.1,100.90.210.1 npm run dev`처럼 HOST에 쉼표로 주소를 주면 그 주소에서만 연다 (스마트폰은 Tailscale 주소로 테스트).
 - `npm run lint` — ESLint로 `js/`, `sw.js`, `tools/`, `.claude/hooks/`의 JS를 검사하고 오류가 없으면 exit 0이다.
 - `npm run typecheck` — `tsc -p jsconfig.json`으로 JS 타입을 검사하고 오류가 없으면 exit 0이다.
 - `npm run build` — `index.html`과 manifest가 참조하는 로컬 파일이 모두 있는지 확인한다 (번들링하지 않음).
