@@ -78,3 +78,9 @@ export function localIso(now = new Date()) {
   return `${todayKey(now)}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
     + `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
 }
+
+/** 분 → '+h:mm' / '−h:mm' / '0:00' (초과 근무처럼 부호가 있는 값) */
+export function formatSignedMinutes(total) {
+  const sign = total > 0 ? '+' : total < 0 ? '−' : '';
+  return sign + formatMinutes(Math.abs(total));
+}

@@ -1,10 +1,12 @@
 // 메인 화면: 요약 카드, 이번 달 달력 그리기 (항상 오늘이 속한 달만 보여준다)
-import { formatMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
+import { formatMinutes, formatSignedMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
 import { BUILTIN_HOLIDAYS } from './holidays.js';
 import { DDAY_RECORD, dDayKey, defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
 import { fillMissingRecords, loadData } from './store.js';
 import { openSheet } from './sheet.js';
 import { openSettings } from './settings.js';
+import { onPunchOut, pushWidget } from './widget.js';
+import { punchOut } from './punch.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,6 +32,7 @@ function render() {
   const today = todayKey();
   renderSummary(monthSummary({ ...view, records: data.records, holidays, today }));
   renderCalendar(data.records, holidays, today);
+  pushWidget({ ...view, records: data.records, holidays, today });
 }
 
 function renderSummary(s) {
@@ -42,8 +45,7 @@ function renderSummary(s) {
   $('sum-bar-fill').style.width = `${Math.min(100, s.percent)}%`;
   // 초과 근무: 양수는 +파랑, 음수는 −빨강, 0은 기본색
   const overtime = $('sum-overtime');
-  const sign = s.overtimeMinutes > 0 ? '+' : s.overtimeMinutes < 0 ? '−' : '';
-  overtime.textContent = sign + formatMinutes(Math.abs(s.overtimeMinutes));
+  overtime.textContent = formatSignedMinutes(s.overtimeMinutes);
   overtime.classList.toggle('plus', s.overtimeMinutes > 0);
   overtime.classList.toggle('minus', s.overtimeMinutes < 0);
   $('sum-average').textContent = s.dailyAverage === null ? '—' : formatMinutes(s.dailyAverage);
@@ -92,6 +94,22 @@ function renderCalendar(records, holidays, today) {
     grid.append(cell);
   }
 }
+
+let toastTimer = 0;
+/** 화면 아래에 잠깐 안내 글을 띄운다 */
+function showToast(text) {
+  const toast = $('toast');
+  toast.textContent = text;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => { toast.hidden = true; }, 4000);
+}
+
+// 위젯의 '지금 퇴근': 저장하고 결과를 알린 뒤 다시 그린다 (위젯도 함께 갱신된다)
+onPunchOut((date, time) => {
+  showToast(punchOut(date, time));
+  render();
+});
 
 $('settings-open').addEventListener('click', () => openSettings({ onChange: render }));
 

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력, 맨 아래 '지금 퇴근' 버튼. 나머지를 누르면 앱이 열린다 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- 1단: 요약 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/widget_label"
+            android:textColor="@color/widget_text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:text="@string/widget_overtime"
+            android:textColor="@color/widget_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/widget_overtime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_dash"
+            android:textColor="@color/widget_text"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_filled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/widget_text"
+            android:textSize="13sp" />
+
+        <ProgressBar
+            android:id="@+id/widget_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="6dp"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:progressBackgroundTint="@color/widget_line"
+            android:progressTint="@color/widget_primary" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_average"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/widget_muted"
+        android:textSize="12sp" />
+
+    <!-- 2단: 달력 (요일 줄 + 주 줄은 WorkWidget이 채운다) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <TextView style="@style/WidgetWeekday" android:text="일" android:textColor="@color/widget_red" />
+        <TextView style="@style/WidgetWeekday" android:text="월" />
+        <TextView style="@style/WidgetWeekday" android:text="화" />
+        <TextView style="@style/WidgetWeekday" android:text="수" />
+        <TextView style="@style/WidgetWeekday" android:text="목" />
+        <TextView style="@style/WidgetWeekday" android:text="금" />
+        <TextView style="@style/WidgetWeekday" android:text="토" android:textColor="@color/widget_blue" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_calendar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical" />
+
+    <Button
+        android:id="@+id/widget_punch"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/widget_button"
+        android:text="@string/widget_punch"
+        android:textColor="@color/widget_on_primary"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+</LinearLayout>
