@@ -1,7 +1,7 @@
 // 메인 화면: 요약 카드, 이번 달 달력 그리기 (항상 오늘이 속한 달만 보여준다)
 import { formatMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
 import { BUILTIN_HOLIDAYS } from './holidays.js';
-import { dDayKey, defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
+import { DDAY_RECORD, dDayKey, defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
 import { fillMissingRecords, loadData } from './store.js';
 import { openSheet } from './sheet.js';
 import { openSettings } from './settings.js';
@@ -11,13 +11,15 @@ const $ = (id) => document.getElementById(id);
 /** 보여줄 연·월 = 오늘이 속한 달. 앱을 켜 둔 채 달이 바뀌어도 다음 그리기 때 따라간다 */
 let view = parseKey(todayKey());
 
-/** 이번 달(오늘이 속한 달) 영업일 중 기록이 없는 날을 기본 근무 시각으로 저장한다 */
+/** 이번 달(오늘이 속한 달) 근무일 중 기록이 없는 날을 기본 근무 시각으로, D-Day는 D-Day 기록으로 저장한다 */
 function fillThisMonth() {
   const data = loadData();
   const holidays = holidayMap(BUILTIN_HOLIDAYS, data.customHolidays);
   const { year, month } = parseKey(todayKey());
-  const days = monthKeys(year, month).filter((key) => isBusinessDay(key, holidays));
+  const dday = dDayKey(year, month, holidays);
+  const days = monthKeys(year, month).filter((key) => isBusinessDay(key, holidays) && key !== dday);
   fillMissingRecords(days, defaultTimes());
+  if (dday) fillMissingRecords([dday], DDAY_RECORD);
 }
 
 function render() {
@@ -32,13 +34,18 @@ function render() {
 
 function renderSummary(s) {
   $('month-title').textContent = `${view.year}년 ${view.month}월`;
-  $('sum-days').textContent = `영업일 ${s.businessDays}일 · 필수 ${formatMinutes(s.requiredMinutes)}`
+  $('sum-days').textContent = `근무일 ${s.businessDays}일 · 필수 ${formatMinutes(s.requiredMinutes)}`
     + (s.annualDays > 0 ? ` (연차 ${s.annualDays}일 −${formatMinutes(s.leaveMinutes)})` : '');
   $('sum-filled').textContent =
     `${formatMinutes(s.filledMinutes)} / ${formatMinutes(s.requiredMinutes)} (${s.percent}%)`;
   $('sum-bar').setAttribute('aria-valuenow', String(Math.min(100, s.percent)));
   $('sum-bar-fill').style.width = `${Math.min(100, s.percent)}%`;
-  $('sum-remaining').textContent = formatMinutes(s.remainingMinutes);
+  // 초과 근무: 양수는 +파랑, 음수는 −빨강, 0은 기본색
+  const overtime = $('sum-overtime');
+  const sign = s.overtimeMinutes > 0 ? '+' : s.overtimeMinutes < 0 ? '−' : '';
+  overtime.textContent = sign + formatMinutes(Math.abs(s.overtimeMinutes));
+  overtime.classList.toggle('plus', s.overtimeMinutes > 0);
+  overtime.classList.toggle('minus', s.overtimeMinutes < 0);
   $('sum-average').textContent = s.dailyAverage === null ? '—' : formatMinutes(s.dailyAverage);
 }
 

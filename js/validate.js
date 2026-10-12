@@ -2,7 +2,7 @@
 import { normalizeTime, timeToMinutes } from './date.js';
 
 /**
- * 영업일 기록만 들어온다 (주말·휴일은 시트를 열 수 없다)
+ * 근무일 기록만 들어온다 (주말·휴일은 시트를 열 수 없다)
  * 세 칸 모두 사용자가 친 글자 그대로 받는다 ('09:30', '930', '' 등)
  * @param {{start: string|null, end: string|null, exclude: string|null, leave: string|null}} input
  * @returns {Record<string, string>}

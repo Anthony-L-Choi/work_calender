@@ -66,6 +66,8 @@ button { font: inherit; color: inherit; }
 .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
 .summary-grid dt { color: var(--muted); font-size: 12px; }
 .summary-grid dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
+.summary-grid dd.plus { color: var(--blue); }
+.summary-grid dd.minus { color: var(--red); }
 
 /* 이번 달 제목 */
 .month-nav { margin: 16px 0 8px; text-align: center; }

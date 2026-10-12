@@ -7,6 +7,8 @@ export const DEFAULT_START_MINUTES = 8 * 60;
 export const DEFAULT_EXCLUDE_MINUTES = 80;
 // annual: 필수 시간에서 8h를 뺀다. dday: 근무 0이지만 필수 시간은 그대로다
 export const LEAVE_LABELS = { annual: '연차', dday: 'D-Day' };
+// D-Day 날짜의 기본 기록: 근무 시각 없이 D-Day로 둔다
+export const DDAY_RECORD = { start: null, end: null, excludeMinutes: null, leave: 'dday' };
 
 /**
  * 내장 공휴일 + 사용자 휴일 → Map(date → name). 내장 공휴일은 끌 수 없고 항상 휴일이다
@@ -20,7 +22,7 @@ export function holidayMap(builtin, custom = []) {
   return map;
 }
 
-/** 월~금이고 휴일이 아니면 영업일 */
+/** 월~금이고 휴일이 아니면 근무일 */
 export function isBusinessDay(key, holidays) {
   const wd = weekdayOf(key);
   return wd >= 1 && wd <= 5 && !holidays.has(key);
@@ -66,6 +68,11 @@ export function recordMinutes(record) {
   return record ? workMinutes(record.start, record.end, record.excludeMinutes ?? 0) : 0;
 }
 
+/** 주 40시간 기준 월 상한 = 40h ÷ 7 × 월 일수. 분 단위로 올림한다 (31일 → 177:09) */
+export function weeklyCapMinutes(daysInMonth) {
+  return Math.ceil((40 * 60 * daysInMonth) / 7);
+}
+
 /**
  * 한 달 요약
  * @param {{year: number, month: number, records: Record<string, any>, holidays: Map<string,string>, today: string}} p
@@ -82,22 +89,25 @@ export function monthSummary({ year, month, records, holidays, today }) {
     const record = records[key];
     filledMinutes += recordMinutes(record);
     businessDays += 1;
-    if (record?.leave === 'annual') {
-      annualDays += 1;
-      continue; // 연차일은 남은 영업일(하루 평균)에서도 뺀다
-    }
-    if (key > today || (key === today && !record)) remainingDays += 1;
+    if (record?.leave === 'annual') annualDays += 1;
+    // 남은 근무일: 오늘 포함 이후 근무일. 연차·D-Day는 일하지 않으므로 뺀다
+    if (key >= today && !record?.leave) remainingDays += 1;
   }
 
-  // 필수 = 영업일 × 8h − 연차일수 × 8h
+  // 필수 = min(근무일 × 8h, 40h ÷ 7 × 월 일수(분 올림)) − 연차일수 × 8h
   const leaveMinutes = annualDays * DAY_MINUTES;
-  const requiredMinutes = Math.max(0, businessDays * DAY_MINUTES - leaveMinutes);
-  const remainingMinutes = Math.max(0, requiredMinutes - filledMinutes);
+  const baseMinutes = Math.min(businessDays * DAY_MINUTES, weeklyCapMinutes(monthKeys(year, month).length));
+  const requiredMinutes = Math.max(0, baseMinutes - leaveMinutes);
+  // 초과 근무 = 채운 시간 − 필수 시간 (음수면 부족). 남은 날의 기본 기록 8h도 채운 시간에 들어 있다
+  const overtimeMinutes = filledMinutes - requiredMinutes;
   const percent = requiredMinutes === 0 ? 100 : Math.floor((filledMinutes / requiredMinutes) * 100);
-  const dailyAverage = remainingDays === 0 ? null : Math.ceil(remainingMinutes / remainingDays);
+  // 하루 평균 = 8h − 초과 ÷ 남은 근무일 (부족하면 8h보다 늘고 초과면 준다). 분 단위 올림, 0 미만은 0
+  const dailyAverage = remainingDays === 0
+    ? null
+    : Math.max(0, Math.ceil(DAY_MINUTES - overtimeMinutes / remainingDays));
 
   return {
     businessDays, annualDays, leaveMinutes, requiredMinutes, filledMinutes,
-    remainingMinutes, remainingDays, percent, dailyAverage,
+    overtimeMinutes, remainingDays, percent, dailyAverage,
   };
 }

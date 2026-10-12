@@ -39,14 +39,14 @@ export function saveRecord({ date, start, end, excludeMinutes, leave }) {
 /**
  * 기록이 없는 날짜에만 같은 근무 시각으로 기록을 만든다 (있는 기록은 건드리지 않는다). 만든 개수를 돌려준다
  * @param {string[]} dates
- * @param {{start: string, end: string, excludeMinutes: number}} times
+ * @param {{start: string|null, end: string|null, excludeMinutes: number|null, leave?: string|null}} times
  */
 export function fillMissingRecords(dates, times) {
   const data = loadData();
   const missing = dates.filter((date) => !data.records[date]);
   if (missing.length === 0) return 0;
   const updatedAt = localIso();
-  for (const date of missing) data.records[date] = { date, ...times, leave: null, updatedAt };
+  for (const date of missing) data.records[date] = { date, leave: null, ...times, updatedAt };
   saveData(data);
   return missing.length;
 }

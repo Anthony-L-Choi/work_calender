@@ -15,7 +15,7 @@ const excludeInput = /** @type {HTMLInputElement} */ ($('in-exclude'));
 const annualInput = /** @type {HTMLInputElement} */ ($('in-annual'));
 const ddayInput = /** @type {HTMLInputElement} */ ($('in-dday'));
 
-/** @type {{date: string, onChange: () => void} | null} */
+/** @type {{date: string, isDDay: boolean, onChange: () => void} | null} */
 let current = null;
 
 function readForm() {
@@ -48,12 +48,12 @@ function syncLeave() {
 }
 
 /**
- * 영업일에만 연다 (주말·휴일 칸은 달력에서 누를 수 없다)
+ * 근무일에만 연다 (주말·휴일 칸은 달력에서 누를 수 없다)
  * @param {string} date
  * @param {{holidayName?: string, isDDay?: boolean, onChange: () => void}} options
  */
 export function openSheet(date, { holidayName, isDDay = false, onChange }) {
-  current = { date, onChange };
+  current = { date, isDDay, onChange };
   const { month, day } = parseKey(date);
   const suffix = holidayName ? ` · ${holidayName}` : '';
   $('sheet-title').textContent = `${month}월 ${day}일 (${WEEKDAYS[weekdayOf(date)]})${suffix}`;
@@ -75,12 +75,15 @@ export function openSheet(date, { holidayName, isDDay = false, onChange }) {
   dialog.showModal();
 }
 
-/** 기본값으로 채운다: 출근 08:00, 제외 01:20, 퇴근은 하루 8시간을 채우는 시각. 연차·D-Day 선택은 푼다 */
+/**
+ * 기본값으로 채운다: 출근 08:00, 제외 01:20, 퇴근은 하루 8시간을 채우는 시각. 연차 선택은 푼다.
+ * 그 달 D-Day는 기본값이 D-Day다
+ */
 function fillDefaults() {
   annualInput.checked = false;
-  ddayInput.checked = false;
+  ddayInput.checked = current?.isDDay ?? false;
+  if (!ddayInput.checked) fillDefaultTimes();
   syncLeave();
-  fillDefaultTimes();
 }
 
 function fillDefaultTimes() {
@@ -112,6 +115,13 @@ function formatTyping(input, deleting) {
 
 const timeInputs = [startInput, endInput, excludeInput];
 
+/** 다음 시각 칸으로 옮긴다. 마지막 칸이면 칸에서 빠져 키보드를 닫는다 */
+function moveNext(input) {
+  const next = timeInputs[timeInputs.indexOf(input) + 1];
+  if (next) next.focus();
+  else input.blur();
+}
+
 form.addEventListener('input', (event) => {
   const target = /** @type {HTMLInputElement} */ (event.target);
   if (target.name === 'leave') {
@@ -122,9 +132,21 @@ form.addEventListener('input', (event) => {
   }
   if (timeInputs.includes(target)) {
     const inputType = /** @type {InputEvent} */ (event).inputType ?? '';
-    formatTyping(target, inputType.startsWith('delete'));
+    const deleting = inputType.startsWith('delete');
+    formatTyping(target, deleting);
+    // 'HH:MM'을 다 쳤고 올바른 시각이면 다음 칸으로. 틀린 값이면 머물러 고치게 한다
+    if (!deleting && /^\d{2}:\d{2}$/.test(target.value) && normalizeTime(target.value)) moveNext(target);
   }
 });
+
+// 키보드의 다음/완료(Enter): 저장하지 않고 다음 칸으로 옮기거나 키보드를 닫는다
+for (const input of timeInputs) {
+  input.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    moveNext(input);
+  });
+}
 
 // 칸을 누르면 비워서 처음부터 치게 하고, 원래 값은 안내 글자로 보여준다
 // 칸을 벗어날 때 비어 있으면 원래 값으로 되돌리고, '9:30', '930'도 '09:30'으로 맞춘다.

@@ -40,7 +40,7 @@
         <div class="bar-fill" id="sum-bar-fill"></div>
       </div>
       <dl class="summary-grid">
-        <div><dt>남은 시간</dt><dd id="sum-remaining"></dd></div>
+        <div><dt>초과 근무</dt><dd id="sum-overtime"></dd></div>
         <div><dt>하루 평균 필요</dt><dd id="sum-average"></dd></div>
       </dl>
     </section>
@@ -69,17 +69,17 @@
       <div class="field-row">
         <label class="field">
           <span>출근시간</span>
-          <input type="text" id="in-start" name="start" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00:00">
+          <input type="text" id="in-start" name="start" inputmode="numeric" enterkeyhint="next" maxlength="5" autocomplete="off" placeholder="00:00">
           <small class="error" data-error-for="start"></small>
         </label>
         <label class="field">
           <span>퇴근시간</span>
-          <input type="text" id="in-end" name="end" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00:00">
+          <input type="text" id="in-end" name="end" inputmode="numeric" enterkeyhint="next" maxlength="5" autocomplete="off" placeholder="00:00">
           <small class="error" data-error-for="end"></small>
         </label>
         <label class="field">
           <span>제외시간</span>
-          <input type="text" id="in-exclude" name="exclude" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="00:00">
+          <input type="text" id="in-exclude" name="exclude" inputmode="numeric" enterkeyhint="done" maxlength="5" autocomplete="off" placeholder="00:00">
           <small class="error" data-error-for="exclude"></small>
         </label>
       </div>
