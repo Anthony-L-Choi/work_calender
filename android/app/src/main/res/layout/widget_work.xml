@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력. 근무일 칸은 그날 입력 시트를, 나머지는 앱을 연다 -->
+<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력. 근무일 칸은 그날 입력 시트를, 연·월 제목은 앱을 연다 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"

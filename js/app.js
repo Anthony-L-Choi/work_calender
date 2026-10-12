@@ -1,7 +1,7 @@
 // 메인 화면: 요약 카드, 이번 달 달력 그리기 (항상 오늘이 속한 달만 보여준다)
 import { formatMinutes, formatSignedMinutes, monthKeys, parseKey, todayKey, weekdayOf } from './date.js';
 import { BUILTIN_HOLIDAYS } from './holidays.js';
-import { DDAY_RECORD, dDayKey, defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
+import { DDAY_RECORD, dDayKey, dayTone, defaultTimes, holidayMap, isBusinessDay, monthSummary, recordMinutes, LEAVE_LABELS } from './calc.js';
 import { fillMissingRecords, loadData } from './store.js';
 import { openSheet } from './sheet.js';
 import { openSettings } from './settings.js';
@@ -78,7 +78,11 @@ function renderCalendar(records, holidays, today) {
     const lines = [[ 'day', String(parseKey(key).day) ]];
     if (holidayName) lines.push(['name', holidayName]);
     if (businessDay && record?.leave) lines.push(['leave', LEAVE_LABELS[record.leave]]);
-    if (businessDay && record?.start && record?.end) lines.push(['work', formatMinutes(recordMinutes(record))]);
+    // 근무시간은 8h보다 많으면 파랑, 적으면 빨강
+    if (businessDay && record?.start && record?.end) {
+      const minutes = recordMinutes(record);
+      lines.push([`work ${dayTone(minutes)}`, formatMinutes(minutes)]);
+    }
     for (const [cls, text] of lines) {
       cell.append(Object.assign(document.createElement('span'), { className: cls, textContent: text }));
     }

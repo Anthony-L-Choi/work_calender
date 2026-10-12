@@ -16,7 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 4x4 홈 화면 위젯: 위에 이번 달 요약, 아래에 달력. 근무일 칸을 누르면 앱에서 그날 입력 시트를 연다.
+ * 4x4 홈 화면 위젯: 위에 이번 달 요약, 아래에 달력. 근무일 칸을 누르면 앱에서 그날 입력 시트를,
+ * 연·월 제목을 누르면 앱을 연다. 나머지는 눌러도 아무 일도 없다.
  * 계산은 하지 않고 앱(js/widget.js)이 넘긴 글자를 그린다. 30분마다 다시 그려 날짜가 바뀌면 그날 줄을 고른다
  */
 public class WorkWidget extends AppWidgetProvider {
@@ -42,7 +43,7 @@ public class WorkWidget extends AppWidgetProvider {
 
     private static RemoteViews build(Context context, String json) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_work);
-        views.setOnClickPendingIntent(R.id.widget_root, openApp(context, Intent.ACTION_MAIN, null, 0));
+        views.setOnClickPendingIntent(R.id.widget_title, openApp(context, Intent.ACTION_MAIN, null, 0));
         views.removeAllViews(R.id.widget_calendar);
         try {
             if (json == null) throw new JSONException("no data");

@@ -68,6 +68,11 @@ export function recordMinutes(record) {
   return record ? workMinutes(record.start, record.end, record.excludeMinutes ?? 0) : 0;
 }
 
+/** 하루 근무시간을 8h와 비교: 많으면 over, 적으면 under, 같으면 even (달력·위젯 글자색) */
+export function dayTone(minutes) {
+  return minutes > DAY_MINUTES ? 'over' : minutes < DAY_MINUTES ? 'under' : 'even';
+}
+
 /** 주 40시간 기준 월 상한 = 40h ÷ 7 × 월 일수. 분 단위로 올림한다 (31일 → 177:09) */
 export function weeklyCapMinutes(daysInMonth) {
   return Math.ceil((40 * 60 * daysInMonth) / 7);

@@ -99,7 +99,9 @@ button { font: inherit; color: inherit; }
 .cell span:last-child:not(.day) { margin-bottom: auto; }
 .cell .name { font-size: 9px; color: var(--red); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .cell .leave { font-size: 10px; color: var(--leave); }
-.cell .work { font-size: 12px; font-weight: 600; color: var(--primary); }
+.cell .work { font-size: 12px; font-weight: 600; color: var(--text); }
+.cell .work.over { color: var(--blue); }
+.cell .work.under { color: var(--red); }
 .cell.sat .day { color: var(--blue); }
 .cell.sun .day, .cell.holiday .day { color: var(--red); }
 .cell.today { border: 2px solid var(--primary); background: var(--primary-soft); }

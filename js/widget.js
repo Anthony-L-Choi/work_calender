@@ -1,7 +1,7 @@
 // APK 홈 화면 위젯과 주고받기. 브라우저(PWA)에는 위젯이 없으므로 아무것도 하지 않는다.
 // 위젯은 계산하지 않고 여기서 만든 글자와 칸 종류를 그대로 그린다 (계산은 calc.js)
 import { formatMinutes, formatSignedMinutes, monthKeys, parseKey, weekdayOf } from './date.js';
-import { DAY_MINUTES, LEAVE_LABELS, isBusinessDay, monthSummary, recordMinutes } from './calc.js';
+import { LEAVE_LABELS, dayTone, isBusinessDay, monthSummary, recordMinutes } from './calc.js';
 
 const PLUGIN = 'WidgetBridge';
 const cap = /** @type {any} */ (window).Capacitor;
@@ -26,8 +26,7 @@ function cellDetail(key, records, holidays) {
   if (record.leave) return { text: LEAVE_LABELS[record.leave], tone: 'leave' };
   if (!record.start || !record.end) return { text: '', tone: 'even' };
   const minutes = recordMinutes(record);
-  const tone = minutes > DAY_MINUTES ? 'over' : minutes < DAY_MINUTES ? 'under' : 'even';
-  return { text: formatMinutes(minutes), tone };
+  return { text: formatMinutes(minutes), tone: dayTone(minutes) };
 }
 
 /**
