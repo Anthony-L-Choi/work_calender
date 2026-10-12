@@ -22,7 +22,12 @@
     <section class="panel">
       <h2>사용자 휴일</h2>
       <form class="holiday-form" id="custom-form" novalidate>
-        <input type="date" id="custom-date" aria-label="날짜">
+        <div class="date-pick">
+          <select id="custom-year" aria-label="연도"></select>
+          <select id="custom-month" aria-label="월"></select>
+          <select id="custom-day" aria-label="일"></select>
+          <label class="cal-btn" title="달력에서 고르기">📅<input type="date" id="custom-date" aria-label="달력에서 날짜 고르기"></label>
+        </div>
         <input type="text" id="custom-name" placeholder="이름 (예: 창립기념일)" aria-label="이름">
         <button type="submit" class="primary">추가</button>
       </form>

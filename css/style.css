@@ -171,8 +171,18 @@ button { font: inherit; color: inherit; }
   padding: 14px 16px; margin-bottom: 12px;
 }
 .panel h2 { margin: 0 0 8px; font-size: 16px; }
-.holiday-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; }
-.holiday-form input {
+/* 1줄: 연·월·일 드롭다운 + 달력 버튼, 2줄: 이름 + 추가 */
+.holiday-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+/* 연도는 글자가 길어 조금 넓게 */
+.date-pick { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; }
+.date-pick select { padding: 8px 2px 8px 6px; }
+/* 날짜 칸은 투명하게 달력 버튼 위에 겹쳐 두고, 누르면 달력 창만 연다 */
+.cal-btn {
+  position: relative; display: flex; align-items: center; justify-content: center; padding: 0 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer;
+}
+.cal-btn input { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; opacity: 0; cursor: pointer; }
+.holiday-form input, .holiday-form select {
   min-width: 0; font: inherit; padding: 8px; color: var(--text);
   border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
 }
