@@ -16,11 +16,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 4x4 홈 화면 위젯: 위에 이번 달 요약, 아래에 달력, 맨 아래 '지금 퇴근' 버튼.
+ * 4x4 홈 화면 위젯: 위에 이번 달 요약, 아래에 달력. 근무일 칸을 누르면 앱에서 그날 입력 시트를 연다.
  * 계산은 하지 않고 앱(js/widget.js)이 넘긴 글자를 그린다. 30분마다 다시 그려 날짜가 바뀌면 그날 줄을 고른다
  */
 public class WorkWidget extends AppWidgetProvider {
-    static final String ACTION_PUNCH_OUT = "io.github.anthonylchoi.workcal.PUNCH_OUT";
+    static final String ACTION_OPEN_DATE = "io.github.anthonylchoi.workcal.OPEN_DATE";
+    static final String EXTRA_DATE = "date";
     private static final String PREFS = "workcal.widget";
     private static final String KEY = "data";
 
@@ -41,8 +42,7 @@ public class WorkWidget extends AppWidgetProvider {
 
     private static RemoteViews build(Context context, String json) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_work);
-        views.setOnClickPendingIntent(R.id.widget_root, openApp(context, Intent.ACTION_MAIN, 0));
-        views.setOnClickPendingIntent(R.id.widget_punch, openApp(context, ACTION_PUNCH_OUT, 1));
+        views.setOnClickPendingIntent(R.id.widget_root, openApp(context, Intent.ACTION_MAIN, null, 0));
         views.removeAllViews(R.id.widget_calendar);
         try {
             if (json == null) throw new JSONException("no data");
@@ -76,14 +76,32 @@ public class WorkWidget extends AppWidgetProvider {
             int index = i - offset;
             if (index >= 0 && index < cells.length()) {
                 JSONObject c = cells.getJSONObject(index);
-                cell.setTextViewText(R.id.widget_cell, String.valueOf(c.getInt("day")));
-                setTextColor(context, cell, R.id.widget_cell, kindColor(c.getString("kind")));
+                String kind = c.getString("kind");
+                cell.setTextViewText(R.id.widget_day, String.valueOf(c.getInt("day")));
+                setTextColor(context, cell, R.id.widget_day, kindColor(kind));
+                // 둘째 줄: 근무시간(8h보다 많으면 파랑, 적으면 빨강) 또는 연차·D-Day
+                cell.setTextViewText(R.id.widget_hours, c.optString("text"));
+                setTextColor(context, cell, R.id.widget_hours, toneColor(c.optString("tone")));
+                // 근무일(연차·D-Day 포함)만 누를 수 있다. 날짜마다 요청 번호를 달리해야 서로 덮어쓰지 않는다
+                if (kind.equals("work") || kind.equals("leave")) {
+                    cell.setOnClickPendingIntent(R.id.widget_cell,
+                            openApp(context, ACTION_OPEN_DATE, c.getString("date"), 100 + c.getInt("day")));
+                }
                 if (today.equals(c.getString("date"))) {
                     cell.setInt(R.id.widget_cell, "setBackgroundResource", R.drawable.widget_today);
                 }
             }
             row.addView(R.id.widget_row, cell);
             if (i % 7 == 6) views.addView(R.id.widget_calendar, row);
+        }
+    }
+
+    private static int toneColor(String tone) {
+        switch (tone) {
+            case "over": return R.color.widget_blue;
+            case "under": return R.color.widget_red;
+            case "leave": return R.color.widget_leave;
+            default: return R.color.widget_muted;
         }
     }
 
@@ -105,9 +123,10 @@ public class WorkWidget extends AppWidgetProvider {
         }
     }
 
-    private static PendingIntent openApp(Context context, String action, int requestCode) {
+    private static PendingIntent openApp(Context context, String action, String date, int requestCode) {
         Intent intent = new Intent(context, MainActivity.class).setAction(action)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (date != null) intent.putExtra(EXTRA_DATE, date);
         return PendingIntent.getActivity(context, requestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }

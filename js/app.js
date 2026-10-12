@@ -5,8 +5,7 @@ import { DDAY_RECORD, dDayKey, defaultTimes, holidayMap, isBusinessDay, monthSum
 import { fillMissingRecords, loadData } from './store.js';
 import { openSheet } from './sheet.js';
 import { openSettings } from './settings.js';
-import { onPunchOut, pushWidget } from './widget.js';
-import { punchOut } from './punch.js';
+import { onOpenDate, pushWidget } from './widget.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -95,20 +94,13 @@ function renderCalendar(records, holidays, today) {
   }
 }
 
-let toastTimer = 0;
-/** 화면 아래에 잠깐 안내 글을 띄운다 */
-function showToast(text) {
-  const toast = $('toast');
-  toast.textContent = text;
-  toast.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => { toast.hidden = true; }, 4000);
-}
-
-// 위젯의 '지금 퇴근': 저장하고 결과를 알린 뒤 다시 그린다 (위젯도 함께 갱신된다)
-onPunchOut((date, time) => {
-  showToast(punchOut(date, time));
+// 위젯에서 날짜를 누르면 그날 입력 시트를 연다 (주말·휴일은 앱 달력처럼 열지 않는다)
+onOpenDate((date) => {
   render();
+  const holidays = holidayMap(BUILTIN_HOLIDAYS, loadData().customHolidays);
+  if (!isBusinessDay(date, holidays)) return;
+  const { year, month } = parseKey(date);
+  openSheet(date, { holidayName: holidays.get(date), isDDay: date === dDayKey(year, month, holidays), onChange: render });
 });
 
 $('settings-open').addEventListener('click', () => openSettings({ onChange: render }));

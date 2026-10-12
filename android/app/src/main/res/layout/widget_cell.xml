@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- 달력 한 칸: 날짜 숫자, 그 밑에 근무시간 또는 연차·D-Day -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_cell"
     android:layout_width="0dp"
     android:layout_height="match_parent"
     android:layout_weight="1"
     android:layout_margin="1dp"
     android:gravity="center"
-    android:textColor="@color/widget_text"
-    android:textSize="13sp" />
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/widget_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:includeFontPadding="false"
+        android:textColor="@color/widget_text"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_hours"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="none"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="@color/widget_muted"
+        android:textSize="9sp" />
+</LinearLayout>

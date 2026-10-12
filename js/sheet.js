@@ -72,6 +72,8 @@ export function openSheet(date, { holidayName, isDDay = false, onChange }) {
     fillDefaults();
   }
   showErrors({});
+  // 위젯에서 다른 날짜를 눌러 다시 열 수 있으므로 열려 있으면 닫고 연다
+  if (dialog.open) dialog.close();
   dialog.showModal();
 }
 

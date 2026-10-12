@@ -1,7 +1,7 @@
 // APK 홈 화면 위젯과 주고받기. 브라우저(PWA)에는 위젯이 없으므로 아무것도 하지 않는다.
 // 위젯은 계산하지 않고 여기서 만든 글자와 칸 종류를 그대로 그린다 (계산은 calc.js)
 import { formatMinutes, formatSignedMinutes, monthKeys, parseKey, weekdayOf } from './date.js';
-import { isBusinessDay, monthSummary } from './calc.js';
+import { DAY_MINUTES, LEAVE_LABELS, isBusinessDay, monthSummary, recordMinutes } from './calc.js';
 
 const PLUGIN = 'WidgetBridge';
 const cap = /** @type {any} */ (window).Capacitor;
@@ -14,6 +14,20 @@ function cellKind(key, records, holidays) {
   if (wd === 6) return 'sat';
   if (isBusinessDay(key, holidays) && records[key]?.leave) return 'leave';
   return 'work';
+}
+
+/**
+ * 날짜 밑 둘째 줄: 근무일은 근무시간, 연차·D-Day는 이름. 주말·휴일은 비운다 (공휴일 이름은 칸이 좁아 넣지 않는다).
+ * tone은 둘째 줄 색: 8h보다 많으면 over, 적으면 under, 같으면 even
+ */
+function cellDetail(key, records, holidays) {
+  const record = records[key];
+  if (!isBusinessDay(key, holidays) || !record) return { text: '', tone: 'even' };
+  if (record.leave) return { text: LEAVE_LABELS[record.leave], tone: 'leave' };
+  if (!record.start || !record.end) return { text: '', tone: 'even' };
+  const minutes = recordMinutes(record);
+  const tone = minutes > DAY_MINUTES ? 'over' : minutes < DAY_MINUTES ? 'under' : 'even';
+  return { text: formatMinutes(minutes), tone };
 }
 
 /**
@@ -31,7 +45,7 @@ export function pushWidget({ year, month, records, holidays, today }) {
     const d = monthSummary({ year, month, records, holidays, today: key });
     daily[key] = d.dailyAverage === null
       ? '남은 근무일 없음'
-      : `하루 평균 필요 ${formatMinutes(d.dailyAverage)} · 남은 ${d.remainingDays}일`;
+      : `하루 평균 필요 ${formatMinutes(d.dailyAverage)} · 남은 근무일수 ${d.remainingDays}일`;
   }
   const data = {
     title: `${year}년 ${month}월`,
@@ -41,7 +55,9 @@ export function pushWidget({ year, month, records, holidays, today }) {
     percent: s.percent,
     daily,
     offset: weekdayOf(keys[0]),
-    cells: keys.map((key) => ({ date: key, day: parseKey(key).day, kind: cellKind(key, records, holidays) })),
+    cells: keys.map((key) => ({
+      date: key, day: parseKey(key).day, kind: cellKind(key, records, holidays), ...cellDetail(key, records, holidays),
+    })),
   };
   cap.nativePromise(PLUGIN, 'update', { data: JSON.stringify(data) }).catch(() => {
     // 위젯 갱신에 실패해도 앱은 그대로 쓴다
@@ -49,12 +65,12 @@ export function pushWidget({ year, month, records, holidays, today }) {
 }
 
 /**
- * 위젯의 '지금 퇴근' 버튼. 앱이 꺼져 있다가 버튼으로 켜져도 네이티브가 이벤트를 붙잡아 두었다가 넘긴다
- * @param {(date: string, time: string) => void} handler 누른 날짜('YYYY-MM-DD')와 시각('HH:MM')
+ * 위젯의 날짜 칸을 누른 경우. 앱이 꺼져 있다가 켜져도 네이티브가 이벤트를 붙잡아 두었다가 넘긴다
+ * @param {(date: string) => void} handler 누른 날짜 'YYYY-MM-DD'
  */
-export function onPunchOut(handler) {
+export function onOpenDate(handler) {
   if (!native) return;
-  cap.addListener(PLUGIN, 'punchOut', (data) => {
-    if (data?.date && data?.time) handler(data.date, data.time);
+  cap.addListener(PLUGIN, 'openDate', (data) => {
+    if (data?.date) handler(data.date);
   });
 }
