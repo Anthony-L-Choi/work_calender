@@ -110,11 +110,23 @@ export function openSettings({ onChange }) {
   setDate(todayKey());
   render();
   show(true);
+  // 휴대폰 뒤로가기(APK는 MainActivity가 웹 뒤로가기로 넘긴다)로 달력에 돌아오도록 기록을 하나 쌓는다
+  history.pushState({ settings: true }, '');
 }
 
-$('settings-back').addEventListener('click', () => {
+function closeSettings() {
   show(false);
   current = null;
+}
+
+// ← 버튼은 쌓은 기록을 되돌려 뒤로가기와 같은 길로 닫는다
+$('settings-back').addEventListener('click', () => {
+  if (history.state?.settings) history.back();
+  else closeSettings();
+});
+
+window.addEventListener('popstate', () => {
+  if (!$('settings').hidden) closeSettings();
 });
 
 $('custom-form').addEventListener('submit', (event) => {
