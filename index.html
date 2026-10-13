@@ -40,13 +40,11 @@
   <main class="main" id="home">
     <section class="summary" id="summary" aria-live="polite">
       <p class="summary-days" id="sum-days"></p>
-      <p class="summary-filled"><strong id="sum-filled"></strong></p>
-      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="sum-bar">
-        <div class="bar-fill" id="sum-bar-fill"></div>
-      </div>
       <dl class="summary-grid">
+        <div><dt>필수 근무</dt><dd id="sum-required"></dd></div>
         <div><dt>초과 근무</dt><dd id="sum-overtime"></dd></div>
         <div><dt>하루 평균 필요</dt><dd id="sum-average"></dd></div>
+        <div><dt>남은 근무일수</dt><dd id="sum-remaining"></dd></div>
       </dl>
     </section>
 
@@ -58,50 +56,57 @@
       <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
     </div>
     <div class="calendar" id="calendar"></div>
+
+    <!-- 달력 아래에 늘 두는 입력 시트: 처음엔 오늘, 달력에서 누른 근무일로 바뀐다 -->
+    <section class="sheet" id="sheet">
+      <p class="sheet-empty" id="sheet-empty" hidden></p>
+      <form id="sheet-form" novalidate>
+        <div class="sheet-pending" id="sheet-pending" hidden>
+          <span>저장하지 않은 변경이 있어요</span>
+          <button type="button" class="primary" id="pending-save">저장</button>
+          <button type="button" id="pending-discard">버리기</button>
+        </div>
+        <div class="sheet-head">
+          <h3 id="sheet-title"></h3>
+          <div class="leave-checks">
+            <label class="leave-check" id="dday-check" hidden><input type="checkbox" id="in-dday" name="leave" value="dday">D-Day</label>
+            <label class="leave-check"><input type="checkbox" id="in-annual" name="leave" value="annual">연차</label>
+          </div>
+        </div>
+        <small class="error" data-error-for="leave"></small>
+
+        <div class="field-row">
+          <label class="field">
+            <span>출근시간</span>
+            <input type="text" id="in-start" name="start" inputmode="numeric" enterkeyhint="next" maxlength="5" autocomplete="off" placeholder="00:00">
+            <small class="error" data-error-for="start"></small>
+          </label>
+          <label class="field">
+            <span>퇴근시간</span>
+            <input type="text" id="in-end" name="end" inputmode="numeric" enterkeyhint="next" maxlength="5" autocomplete="off" placeholder="00:00">
+            <small class="error" data-error-for="end"></small>
+          </label>
+          <label class="field">
+            <span>제외시간</span>
+            <input type="text" id="in-exclude" name="exclude" inputmode="numeric" enterkeyhint="done" maxlength="5" autocomplete="off" placeholder="00:00">
+            <small class="error" data-error-for="exclude"></small>
+          </label>
+        </div>
+        <div class="sheet-hint" id="sheet-hint" hidden>
+          <span class="hint-rest" id="hint-rest"></span>
+          <span class="hint-work" id="hint-work"></span>
+        </div>
+
+        <small class="error" data-error-for="form"></small>
+
+        <div class="sheet-actions">
+          <button type="button" id="btn-reset">↺ 기본값</button>
+          <span class="spacer"></span>
+          <button type="submit" class="primary" id="btn-save">저장</button>
+        </div>
+      </form>
+    </section>
   </main>
 
-  <dialog class="sheet" id="sheet">
-    <form id="sheet-form" method="dialog" novalidate>
-      <div class="sheet-head">
-        <h3 id="sheet-title"></h3>
-        <div class="leave-checks">
-          <label class="leave-check" id="dday-check" hidden><input type="checkbox" id="in-dday" name="leave" value="dday">D-Day</label>
-          <label class="leave-check"><input type="checkbox" id="in-annual" name="leave" value="annual">연차</label>
-        </div>
-      </div>
-      <small class="error" data-error-for="leave"></small>
-
-      <div class="field-row">
-        <label class="field">
-          <span>출근시간</span>
-          <input type="text" id="in-start" name="start" inputmode="numeric" enterkeyhint="next" maxlength="5" autocomplete="off" placeholder="00:00">
-          <small class="error" data-error-for="start"></small>
-        </label>
-        <label class="field">
-          <span>퇴근시간</span>
-          <input type="text" id="in-end" name="end" inputmode="numeric" enterkeyhint="next" maxlength="5" autocomplete="off" placeholder="00:00">
-          <small class="error" data-error-for="end"></small>
-        </label>
-        <label class="field">
-          <span>제외시간</span>
-          <input type="text" id="in-exclude" name="exclude" inputmode="numeric" enterkeyhint="done" maxlength="5" autocomplete="off" placeholder="00:00">
-          <small class="error" data-error-for="exclude"></small>
-        </label>
-      </div>
-      <div class="sheet-hint" id="sheet-hint" hidden>
-        <span class="hint-rest" id="hint-rest"></span>
-        <span class="hint-work" id="hint-work"></span>
-      </div>
-
-      <small class="error" data-error-for="form"></small>
-
-      <div class="sheet-actions">
-        <button type="button" id="btn-reset">↺ 기본값</button>
-        <span class="spacer"></span>
-        <button type="button" id="btn-cancel">취소</button>
-        <button type="submit" class="primary" id="btn-save">저장</button>
-      </div>
-    </form>
-  </dialog>
 </body>
 </html>

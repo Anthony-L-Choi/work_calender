@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력, 3단 고른 날(기본 오늘)의 상세. 연·월 제목은 앱을 열고,
+<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력, 3단 고른 날(기본 오늘)의 상세. 요약 띠는 앱을 열고,
      근무일 칸은 한 번 누르면 고르고 고른 칸을 또 누르거나 상세 칸을 누르면 입력 시트를 연다. 빈 곳은 오늘로 돌아간다 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
@@ -11,6 +11,7 @@
 
     <!-- 1단: 요약. 옅은 파랑 띠(widget_band)로 감싸 달력과 경계를 나눈다. 첫 줄은 월 제목, 필수 시간, 초과 근무 -->
     <LinearLayout
+        android:id="@+id/widget_summary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/widget_band"

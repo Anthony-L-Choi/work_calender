@@ -94,8 +94,9 @@ public class WorkWidget extends AppWidgetProvider {
     private static RemoteViews build(Context context, float scale) {
         String json = prefs(context).getString(KEY, null);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_work);
-        views.setOnClickPendingIntent(R.id.widget_title, openApp(context, Intent.ACTION_MAIN, null, 0));
-        // 빈 곳(배경·요약 글자·빈 칸·주말·공휴일)은 오늘로 돌아간다
+        // 요약 띠(월 제목 포함) 어디를 눌러도 앱을 연다
+        views.setOnClickPendingIntent(R.id.widget_summary, openApp(context, Intent.ACTION_MAIN, null, 0));
+        // 빈 곳(배경·빈 칸·주말·공휴일)은 오늘로 돌아간다
         PendingIntent reset = select(context, null, 300);
         views.setOnClickPendingIntent(R.id.widget_root, reset);
         views.setOnClickPendingIntent(R.id.widget_detail, reset);

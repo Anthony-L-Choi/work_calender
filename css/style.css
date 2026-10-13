@@ -58,12 +58,10 @@ button { font: inherit; color: inherit; }
   padding: 14px 16px;
   border: 1px solid var(--line);
 }
-.summary p { margin: 0 0 6px; }
+.summary p { margin: 0 0 10px; }
 .summary-days { color: var(--muted); font-size: 13px; }
-.summary-filled { font-size: 22px; }
-.bar { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; margin: 8px 0 12px; }
-.bar-fill { height: 100%; width: 0; background: var(--primary); transition: width .2s; }
-.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+/* 2x2: 윗줄 필수·초과(이번 달 전체), 아랫줄 하루 평균·남은 근무일수(앞으로) */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; margin: 0; }
 .summary-grid dt { color: var(--muted); font-size: 12px; }
 .summary-grid dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
 .summary-grid dd.plus { color: var(--blue); }
@@ -105,21 +103,32 @@ button { font: inherit; color: inherit; }
 .cell.sat .day { color: var(--blue); }
 .cell.sun .day, .cell.holiday .day { color: var(--red); }
 .cell.today { border: 2px solid var(--primary); background: var(--primary-soft); }
+.cell.picked { border: 2px solid var(--text); }
 .cell.off { cursor: default; background: var(--bg); opacity: .6; }
 
-/* 입력 시트 */
+/* 입력 시트: 달력 아래에 늘 있는 카드 */
 .sheet {
-  margin: 0 auto auto;
-  width: 100%;
-  max-width: 480px;
-  border: none;
-  border-radius: 0 0 16px 16px;
-  padding: calc(16px + var(--inset-top)) 16px 16px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
   background: var(--card);
-  color: var(--text);
 }
-.sheet::backdrop { background: rgb(0 0 0 / 40%); }
+.sheet form[hidden], .sheet-empty[hidden] { display: none; }
+.sheet-empty { margin: 0; color: var(--muted); font-size: 14px; text-align: center; }
 .sheet h3 { margin: 0 0 12px; font-size: 17px; }
+
+/* 저장하지 않은 변경이 있는데 다른 날짜를 눌렀을 때 묻는 줄 */
+.sheet-pending {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 8px 10px;
+  border-radius: 8px; background: var(--primary-soft); font-size: 13px;
+}
+.sheet-pending[hidden] { display: none; }
+.sheet-pending span { flex: 1; }
+.sheet-pending button {
+  padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer;
+}
+.sheet-pending .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
 
 /* 제목 줄: 날짜 왼쪽, 연차 체크박스 오른쪽 */
 .sheet-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }

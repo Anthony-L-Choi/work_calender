@@ -1,4 +1,4 @@
-// 날짜 입력 시트: 열기/닫기, 기존 기록 채우기, 기본값, 검증, 저장
+// 달력 아래에 늘 두는 날짜 입력 시트: 날짜 바꾸기, 기존 기록 채우기, 기본값, 검증, 저장
 import { formatMinutes, parseKey, weekdayOf, minutesToTime, normalizeTime, timeToMinutes } from './date.js';
 import { breakMinutes, dayTone, defaultTimes, stayMinutes } from './calc.js';
 import { getRecord, saveRecord } from './store.js';
@@ -7,7 +7,7 @@ import { validateRecord } from './validate.js';
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 const $ = (id) => document.getElementById(id);
-const dialog = /** @type {HTMLDialogElement} */ ($('sheet'));
+const sheet = $('sheet');
 const form = /** @type {HTMLFormElement} */ ($('sheet-form'));
 const startInput = /** @type {HTMLInputElement} */ ($('in-start'));
 const endInput = /** @type {HTMLInputElement} */ ($('in-end'));
@@ -15,8 +15,18 @@ const excludeInput = /** @type {HTMLInputElement} */ ($('in-exclude'));
 const annualInput = /** @type {HTMLInputElement} */ ($('in-annual'));
 const ddayInput = /** @type {HTMLInputElement} */ ($('in-dday'));
 
+/** @typedef {{holidayName?: string, isDDay?: boolean, onChange: () => void, onShow?: (date: string) => void}} SheetOptions */
+
 /** @type {{date: string, isDDay: boolean, onChange: () => void} | null} */
 let current = null;
+/** 불러오거나 저장한 직후의 칸 값. 지금 값과 다르면 저장하지 않은 변경이 있다 */
+let loaded = '';
+/**
+ * 저장하지 않은 변경이 있을 때 누른 다음 날짜. [저장]이나 [버리기]를 고르면 그 날짜를 띄운다
+ * @type {{date: string, options: SheetOptions} | null}
+ */
+let pending = null;
+let savedTimer = 0;
 
 function readForm() {
   return {
@@ -25,6 +35,15 @@ function readForm() {
     exclude: excludeInput.value,
     leave: annualInput.checked ? 'annual' : ddayInput.checked ? 'dday' : null,
   };
+}
+
+/** 비교용 칸 값. 칸을 눌러 비운 동안에는 원래 값을, '930'처럼 친 값은 '09:30'으로 본다 */
+function snapshot() {
+  const value = (el) => {
+    const v = el.value || (document.activeElement === el ? el.dataset.prev ?? '' : '');
+    return normalizeTime(v) || v;
+  };
+  return JSON.stringify([value(startInput), value(endInput), value(excludeInput), readForm().leave]);
 }
 
 function showErrors(errors) {
@@ -67,12 +86,29 @@ function syncLeave() {
 }
 
 /**
- * 근무일에만 연다 (주말·휴일 칸은 달력에서 누를 수 없다)
+ * 시트에 그 날짜를 띄운다 (주말·휴일 칸은 달력에서 누를 수 없다).
+ * 저장하지 않은 변경이 있으면 바로 바꾸지 않고 [저장]·[버리기]를 묻는다
  * @param {string} date
- * @param {{holidayName?: string, isDDay?: boolean, onChange: () => void}} options
+ * @param {SheetOptions} options
  */
-export function openSheet(date, { holidayName, isDDay = false, onChange }) {
+export function openSheet(date, options) {
+  if (current?.date === date) return;
+  if (current && snapshot() !== loaded) {
+    pending = { date, options };
+    $('sheet-pending').hidden = false;
+    sheet.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
+  }
+  load(date, options);
+}
+
+/** @param {string} date @param {SheetOptions} options */
+function load(date, { holidayName, isDDay = false, onChange, onShow }) {
   current = { date, isDDay, onChange };
+  pending = null;
+  $('sheet-pending').hidden = true;
+  $('sheet-empty').hidden = true;
+  form.hidden = false;
   const { month, day } = parseKey(date);
   const suffix = holidayName ? ` · ${holidayName}` : '';
   $('sheet-title').textContent = `${month}월 ${day}일 (${WEEKDAYS[weekdayOf(date)]})${suffix}`;
@@ -92,9 +128,18 @@ export function openSheet(date, { holidayName, isDDay = false, onChange }) {
   }
   showErrors({});
   updateHint();
-  // 위젯에서 다른 날짜를 눌러 다시 열 수 있으므로 열려 있으면 닫고 연다
-  if (dialog.open) dialog.close();
-  dialog.showModal();
+  loaded = snapshot();
+  onShow?.(date);
+}
+
+/** 띄울 근무일이 없을 때(오늘이 주말·휴일) 입력 칸 대신 안내 글만 보인다 */
+export function showSheetMessage(text) {
+  current = null;
+  pending = null;
+  form.hidden = true;
+  const empty = $('sheet-empty');
+  empty.hidden = false;
+  empty.textContent = text;
 }
 
 /**
@@ -113,11 +158,6 @@ function fillDefaultTimes() {
   startInput.value = times.start;
   endInput.value = times.end;
   excludeInput.value = minutesToTime(times.excludeMinutes);
-}
-
-function close() {
-  dialog.close();
-  current = null;
 }
 
 /**
@@ -179,6 +219,8 @@ for (const input of timeInputs) {
     input.dataset.prev = input.value;
     input.placeholder = input.value || '00:00';
     input.value = '';
+    // 시트가 화면 아래쪽에 있으므로 키보드가 올라온 뒤 칸을 가운데로 올린다
+    setTimeout(() => input.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
   });
   input.addEventListener('blur', () => {
     if (input.value === '') input.value = input.dataset.prev ?? '';
@@ -189,13 +231,13 @@ for (const input of timeInputs) {
   });
 }
 
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (!current) return;
+/** 검증을 통과하면 저장하고 요약·달력을 다시 그린다. 시트는 닫지 않는다 */
+function save() {
+  if (!current) return false;
   const input = readForm();
   const errors = validateRecord(input);
   showErrors(errors);
-  if (Object.keys(errors).length > 0) return;
+  if (Object.keys(errors).length > 0) return false;
   saveRecord({
     date: current.date,
     start: normalizeTime(input.start) || null,
@@ -204,12 +246,20 @@ form.addEventListener('submit', (event) => {
     excludeMinutes: input.leave ? null : (timeToMinutes(normalizeTime(input.exclude)) ?? 0),
     leave: input.leave,
   });
-  const { onChange } = current;
-  close();
-  onChange();
-});
+  loaded = snapshot();
+  current.onChange();
+  // 저장 버튼에 잠깐 '저장됨'을 보인다
+  const button = $('btn-save');
+  button.textContent = '저장됨';
+  clearTimeout(savedTimer);
+  savedTimer = window.setTimeout(() => { button.textContent = '저장'; }, 1200);
+  return true;
+}
 
-$('btn-cancel').addEventListener('click', close);
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  save();
+});
 
 // 기본값 버튼: 칸만 다시 채우고 저장은 하지 않는다 (저장을 눌러야 반영)
 $('btn-reset').addEventListener('click', () => {
@@ -218,7 +268,17 @@ $('btn-reset').addEventListener('click', () => {
   updateHint();
 });
 
-// 바깥(배경)을 누르면 닫는다
-dialog.addEventListener('click', (event) => {
-  if (event.target === dialog) close();
+// 저장하지 않은 변경 묻기: [저장]은 저장에 성공하면 누른 날짜로, 실패하면 오류를 보이고 지금 날짜에 머문다
+$('pending-save').addEventListener('click', () => {
+  const next = pending;
+  if (next && save()) load(next.date, next.options);
+  else {
+    pending = null;
+    $('sheet-pending').hidden = true;
+  }
+});
+
+// [버리기]: 고친 값을 버리고 누른 날짜를 띄운다
+$('pending-discard').addEventListener('click', () => {
+  if (pending) load(pending.date, pending.options);
 });
