@@ -97,9 +97,7 @@ function changed(action) {
 function show(settings) {
   $('settings').hidden = !settings;
   $('home').hidden = settings;
-  $('settings-back').hidden = !settings;
-  $('settings-open').hidden = settings;
-  $('page-title').textContent = settings ? '설정' : '근무시간 계산기';
+  $('topbar').hidden = !settings;
   window.scrollTo(0, 0);
 }
 

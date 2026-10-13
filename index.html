@@ -12,10 +12,10 @@
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <button type="button" class="icon-btn" id="settings-back" aria-label="뒤로" hidden>←</button>
-    <h1 id="page-title">근무시간 계산기</h1>
-    <button type="button" class="icon-btn" id="settings-open">⚙ 설정</button>
+  <!-- 상단 바는 설정 화면에서만 보인다. 메인 화면은 요약 띠 오른쪽 ⚙로 설정을 연다 -->
+  <header class="topbar" id="topbar" hidden>
+    <button type="button" class="icon-btn" id="settings-back" aria-label="뒤로">←</button>
+    <h1>설정</h1>
   </header>
 
   <section class="main settings" id="settings" hidden>
@@ -38,19 +38,20 @@
   </section>
 
   <main class="main" id="home">
+    <!-- 한 화면: 요약 띠(월 제목·근무일수·⚙ + 4칸) / 달력(남는 높이를 채움) / 입력 시트 -->
     <section class="summary" id="summary" aria-live="polite">
-      <p class="summary-days" id="sum-days"></p>
+      <div class="summary-head">
+        <h2 id="month-title"></h2>
+        <span class="summary-days" id="sum-days"></span>
+        <button type="button" class="icon-btn" id="settings-open" aria-label="설정" title="설정">⚙</button>
+      </div>
       <dl class="summary-grid">
         <div><dt>필수 근무</dt><dd id="sum-required"></dd></div>
         <div><dt>초과 근무</dt><dd id="sum-overtime"></dd></div>
-        <div><dt>하루 평균 필요</dt><dd id="sum-average"></dd></div>
-        <div><dt>남은 근무일수</dt><dd id="sum-remaining"></dd></div>
+        <div><dt>하루 평균</dt><dd id="sum-average"></dd></div>
+        <div><dt>남은 근무일</dt><dd id="sum-remaining"></dd></div>
       </dl>
     </section>
-
-    <div class="month-nav">
-      <h2 id="month-title"></h2>
-    </div>
 
     <div class="weekdays" aria-hidden="true">
       <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
@@ -71,6 +72,7 @@
           <div class="leave-checks">
             <label class="leave-check" id="dday-check" hidden><input type="checkbox" id="in-dday" name="leave" value="dday">D-Day</label>
             <label class="leave-check"><input type="checkbox" id="in-annual" name="leave" value="annual">연차</label>
+            <button type="button" class="reset-btn" id="btn-reset" aria-label="기본값" title="기본값">↺</button>
           </div>
         </div>
         <small class="error" data-error-for="leave"></small>
@@ -92,16 +94,14 @@
             <small class="error" data-error-for="exclude"></small>
           </label>
         </div>
-        <div class="sheet-hint" id="sheet-hint" hidden>
-          <span class="hint-rest" id="hint-rest"></span>
-          <span class="hint-work" id="hint-work"></span>
-        </div>
-
         <small class="error" data-error-for="form"></small>
 
+        <!-- 휴게·근무 안내 상자와 저장 버튼을 한 줄에 -->
         <div class="sheet-actions">
-          <button type="button" id="btn-reset">↺ 기본값</button>
-          <span class="spacer"></span>
+          <div class="sheet-hint" id="sheet-hint" hidden>
+            <span class="hint-rest" id="hint-rest"></span>
+            <span class="hint-work" id="hint-work"></span>
+          </div>
           <button type="submit" class="primary" id="btn-save">저장</button>
         </div>
       </form>

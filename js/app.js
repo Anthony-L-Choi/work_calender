@@ -41,7 +41,7 @@ function render() {
 
 function renderSummary(s) {
   $('month-title').textContent = `${view.year}년 ${view.month}월`;
-  $('sum-days').textContent = `총 근무일수 ${s.businessDays}일`
+  $('sum-days').textContent = `근무 ${s.businessDays}일`
     + (s.annualDays > 0 ? ` (연차 ${s.annualDays}일 −${formatMinutes(s.leaveMinutes)})` : '');
   $('sum-required').textContent = formatMinutes(s.requiredMinutes);
   // 초과 근무: 양수는 +파랑, 음수는 −빨강, 0은 기본색
@@ -129,12 +129,12 @@ function selectToday() {
   showSheetMessage(`오늘(${month}월 ${day}일)은 쉬는 날이에요. 달력에서 근무일을 누르면 입력할 수 있어요.`);
 }
 
-// 위젯에서 날짜를 누르면 시트에 그날을 띄우고 시트까지 내린다 (주말·휴일은 앱 달력처럼 열지 않는다)
+// 위젯에서 날짜를 누르면 시트에 그날을 띄운다 (화면이 작아 시트가 가려 있으면 보이게 내린다) (주말·휴일은 앱 달력처럼 열지 않는다)
 onOpenDate((date) => {
   render();
   if (!isBusinessDay(date, holidayMap(BUILTIN_HOLIDAYS, loadData().customHolidays))) return;
   select(date);
-  $('sheet').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  $('sheet').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 });
 
 $('settings-open').addEventListener('click', () => openSettings({ onChange: render }));

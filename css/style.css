@@ -50,36 +50,43 @@ button { font: inherit; color: inherit; }
 .topbar h1 { margin: 0; font-size: 18px; }
 
 .main { max-width: 480px; margin: 0 auto; padding: 12px 12px calc(12px + var(--inset-bottom)); }
+/* 메인 화면은 상단 바 없이 한 화면(100dvh)에 세로로 쌓고, 달력이 남는 높이를 채운다.
+   키보드가 올라와 화면이 줄면 달력 칸은 최소 높이를 지키고 화면이 스크롤된다 */
+#home:not([hidden]) {
+  display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh;
+  padding-top: calc(10px + var(--inset-top)); padding-bottom: calc(10px + var(--inset-bottom));
+}
 
 /* 요약 카드 */
 .summary {
   background: var(--card);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 8px 12px 10px;
   border: 1px solid var(--line);
 }
-.summary p { margin: 0 0 10px; }
-.summary-days { color: var(--muted); font-size: 13px; }
-/* 2x2: 윗줄 필수·초과(이번 달 전체), 아랫줄 하루 평균·남은 근무일수(앞으로) */
-.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; margin: 0; }
-.summary-grid dt { color: var(--muted); font-size: 12px; }
-.summary-grid dd { margin: 2px 0 0; font-size: 18px; font-weight: 600; }
+/* 첫 줄: 월 제목 · 근무일수 · ⚙ */
+.summary-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.summary-head h2 { margin: 0; font-size: 17px; white-space: nowrap; }
+.summary-days { flex: 1; min-width: 0; color: var(--muted); font-size: 13px; }
+.summary-head .icon-btn { padding: 2px 8px; font-size: 16px; }
+/* 4칸 한 줄: 필수·초과(이번 달 전체), 하루 평균·남은 근무일(앞으로) */
+.summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 0; text-align: center; }
+.summary-grid dt { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.summary-grid dd { margin: 1px 0 0; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .summary-grid dd.plus { color: var(--blue); }
 .summary-grid dd.minus { color: var(--red); }
 
-/* 이번 달 제목 */
-.month-nav { margin: 16px 0 8px; text-align: center; }
-.month-nav h2 { margin: 0; font-size: 18px; }
-
 /* 달력 */
-.weekdays, .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.weekdays span { text-align: center; font-size: 12px; color: var(--muted); padding: 4px 0; }
+.weekdays, .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.weekdays { margin-top: 8px; }
+.weekdays span { text-align: center; font-size: 12px; color: var(--muted); padding: 2px 0 3px; }
+/* 주 수(5·6주)와 상관없이 남는 높이를 주마다 똑같이 나눈다. 누르기 어렵지 않게 칸은 46px 이상 */
+.calendar { flex: 1 0 auto; grid-auto-rows: minmax(46px, 1fr); }
 .weekdays .sun { color: var(--red); }
 .weekdays .sat { color: var(--blue); }
 
 .cell {
-  min-height: 64px;
-  padding: 4px 2px;
+  padding: 3px 2px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--card);
@@ -108,8 +115,8 @@ button { font: inherit; color: inherit; }
 
 /* 입력 시트: 달력 아래에 늘 있는 카드 */
 .sheet {
-  margin-top: 12px;
-  padding: 14px 16px;
+  margin-top: 8px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--card);
@@ -131,13 +138,18 @@ button { font: inherit; color: inherit; }
 .sheet-pending .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
 
 /* 제목 줄: 날짜 왼쪽, 연차 체크박스 오른쪽 */
-.sheet-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 8px; }
 .sheet .sheet-head h3 { margin: 0; }
 /* 연차·D-Day: 글자 칸을 눌러 켜고 끈다. 체크박스는 숨기고 칸 색으로 상태를 보인다 */
-.leave-checks { display: flex; gap: 8px; }
+.leave-checks { display: flex; gap: 6px; }
 .leave-check {
-  position: relative; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px;
-  background: var(--card); color: var(--muted); font-size: 15px; cursor: pointer; user-select: none;
+  position: relative; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card); color: var(--muted); font-size: 14px; cursor: pointer; user-select: none;
+}
+/* ↺ 기본값: 연차 옆 동그란 버튼 */
+.reset-btn {
+  width: 32px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 50%;
+  background: var(--card); color: var(--muted); font-size: 16px; cursor: pointer;
 }
 .leave-check[hidden] { display: none; }
 .leave-check input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
@@ -146,21 +158,21 @@ button { font: inherit; color: inherit; }
 
 /* 출근·퇴근·제외 세 칸을 한 줄에 같은 폭으로 */
 .field-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); text-align: center; }
+.field { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); text-align: center; }
 .field input {
-  width: 100%; font: inherit; font-size: 17px; padding: 9px 0; color: var(--text);
+  width: 100%; font: inherit; font-size: 17px; padding: 7px 0; color: var(--text);
   border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
   text-align: center; font-variant-numeric: tabular-nums;
 }
 .field input:disabled { opacity: .45; }
 
-/* 세 칸 아래 요약 상자: 왼쪽 자동 휴게(작게), 오른쪽 근무시간(크게, 8h보다 많으면 파랑·적으면 빨강) */
+/* 세 칸 아래 요약 상자(저장 버튼 왼쪽): 왼쪽 자동 휴게(작게), 오른쪽 근무시간(크게, 8h보다 많으면 파랑·적으면 빨강) */
 .sheet-hint {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
-  margin-top: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+  flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding: 7px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
 }
 .sheet-hint[hidden] { display: none; }
-.hint-rest { font-size: 14px; color: var(--muted); }
+.hint-rest { font-size: 13px; color: var(--muted); }
 .hint-work { font-size: 14px; color: var(--muted); }
 .hint-work strong { margin-left: 4px; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
 .hint-work.over strong { color: var(--blue); }
@@ -169,10 +181,9 @@ button { font: inherit; color: inherit; }
 .error:empty { display: none; }
 
 
-.sheet-actions { display: flex; gap: 8px; margin-top: 14px; }
-.sheet-actions .spacer { flex: 1; }
+.sheet-actions { display: flex; align-items: stretch; gap: 8px; margin-top: 8px; }
 .sheet-actions button {
-  padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line);
+  margin-left: auto; padding: 8px 18px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--card); cursor: pointer;
 }
 .sheet-actions .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
@@ -185,7 +196,7 @@ button { font: inherit; color: inherit; }
   padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px;
   background: var(--card); cursor: pointer; font-size: 14px;
 }
-.icon-btn[hidden], .main[hidden] { display: none; }
+.icon-btn[hidden], .main[hidden], .topbar[hidden] { display: none; }
 
 /* 설정 화면 */
 .panel {
