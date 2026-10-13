@@ -83,14 +83,16 @@ public class WorkWidget extends AppWidgetProvider {
                 // 둘째 줄: 근무시간(8h보다 많으면 파랑, 적으면 빨강) 또는 연차·D-Day
                 cell.setTextViewText(R.id.widget_hours, c.optString("text"));
                 setTextColor(context, cell, R.id.widget_hours, toneColor(c.optString("tone")));
-                // 근무일(연차·D-Day 포함)만 누를 수 있다. 날짜마다 요청 번호를 달리해야 서로 덮어쓰지 않는다
-                if (kind.equals("work") || kind.equals("leave")) {
+                // 근무일(연차·D-Day 포함)만 누를 수 있다: 채운 타일. 주말·공휴일은 테두리만.
+                // 날짜마다 요청 번호를 달리해야 서로 덮어쓰지 않는다
+                boolean tappable = kind.equals("work") || kind.equals("leave");
+                if (tappable) {
                     cell.setOnClickPendingIntent(R.id.widget_cell,
                             openApp(context, ACTION_OPEN_DATE, c.getString("date"), 100 + c.getInt("day")));
                 }
-                if (today.equals(c.getString("date"))) {
-                    cell.setInt(R.id.widget_cell, "setBackgroundResource", R.drawable.widget_today);
-                }
+                int background = today.equals(c.getString("date")) ? R.drawable.widget_today
+                        : tappable ? R.drawable.widget_cell_fill : R.drawable.widget_cell_outline;
+                cell.setInt(R.id.widget_cell, "setBackgroundResource", background);
             }
             row.addView(R.id.widget_row, cell);
             if (i % 7 == 6) views.addView(R.id.widget_calendar, row);

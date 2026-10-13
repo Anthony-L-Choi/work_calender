@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 누를 수 있는 근무일 칸: 채운 타일 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_cell" />
+    <corners android:radius="6dp" />
+</shape>
