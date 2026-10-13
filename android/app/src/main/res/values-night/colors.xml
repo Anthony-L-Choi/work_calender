@@ -10,4 +10,6 @@
     <color name="widget_red">#F87171</color>
     <color name="widget_blue">#60A5FA</color>
     <color name="widget_leave">#C4B5FD</color>
+    <color name="widget_box">#22272E</color>
+    <color name="widget_box_line">#3A414B</color>
 </resources>

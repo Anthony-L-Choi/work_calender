@@ -1,6 +1,6 @@
 // APK 홈 화면 위젯과 주고받기. 브라우저(PWA)에는 위젯이 없으므로 아무것도 하지 않는다.
 // 위젯은 계산하지 않고 여기서 만든 글자와 칸 종류를 그대로 그린다 (계산은 calc.js)
-import { formatMinutes, formatSignedMinutes, monthKeys, parseKey, weekdayOf } from './date.js';
+import { formatMinutes, formatSignedMinutes, minutesToTime, monthKeys, pad, parseKey, weekdayOf } from './date.js';
 import { LEAVE_LABELS, breakMinutes, dayTone, isBusinessDay, monthSummary, recordMinutes, stayMinutes } from './calc.js';
 
 const PLUGIN = 'WidgetBridge';
@@ -32,23 +32,24 @@ function cellDetail(key, records, holidays) {
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 /**
- * 위젯 맨 아래 상세 칸 두 줄: 첫 줄은 날짜와 출퇴근 시각, 둘째 줄(infoSub)은 제외(있을 때만)와 자동 휴게,
- * 오른쪽은 근무시간 (색은 cellDetail의 tone). 근무 기록이 아니면 둘째 줄은 비운다
+ * 위젯 맨 아래 상세 칸 두 줄: 첫 줄은 날짜와 출퇴근 시각, 둘째 줄(infoSub)은 자동 휴게와 제외,
+ * 오른쪽은 근무시간 (색은 cellDetail의 tone). 근무 기록이 아니면 둘째 줄은 비운다.
+ * 날짜를 바꿔 봐도 글자 위치가 움직이지 않게 날짜는 두 자리(10/02), 시간은 모두 다섯 글자(01:00)로 맞춘다
  */
 function cellInfo(key, records, holidays) {
   const { month, day } = parseKey(key);
-  const date = `${month}/${day}(${WEEKDAYS[weekdayOf(key)]})`;
+  const date = `${pad(month)}/${pad(day)}(${WEEKDAYS[weekdayOf(key)]})`;
   const plain = (info, infoRight = '') => ({ info, infoSub: '', infoRight });
   if (!isBusinessDay(key, holidays)) return plain(`${date} ${holidays.get(key) ?? '쉬는 날'}`);
   const record = records[key];
   if (record?.leave) return plain(`${date} ${LEAVE_LABELS[record.leave]}`);
   if (!record?.start || !record?.end) return plain(`${date} 미입력`);
   const exclude = record.excludeMinutes ?? 0;
-  const rest = `휴게 ${formatMinutes(breakMinutes(stayMinutes(record.start, record.end, exclude)))}`;
+  const rest = breakMinutes(stayMinutes(record.start, record.end, exclude));
   return {
     info: `${date} ${record.start}~${record.end}`,
-    infoSub: exclude ? `제외 ${formatMinutes(exclude)} · ${rest}` : rest,
-    infoRight: `근무 ${formatMinutes(recordMinutes(record))}`,
+    infoSub: `휴게 ${minutesToTime(rest)} · 제외 ${minutesToTime(exclude)}`,
+    infoRight: `근무 ${minutesToTime(recordMinutes(record))}`,
   };
 }
 
