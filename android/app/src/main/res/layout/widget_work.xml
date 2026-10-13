@@ -1,99 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x4 위젯: 1단 이번 달 요약 상자, 2단 달력, 3단 고른 날(기본 오늘)의 상세 상자. 월 제목은 앱을 열고,
-     근무일 칸은 한 번 누르면 고르고 고른 칸을 또 누르거나 상세 상자를 누르면 입력 시트를 연다. 빈 곳은 오늘로 돌아간다.
-     값이 바뀌어도 위치가 움직이지 않게 한다: 요약 첫 줄은 비율로 자리를 나누고, 글자 줄은 모두 한 줄로 묶고,
-     상세의 ✎는 숨길 때도 자리를 남긴다 (날짜·시각 글자 수는 js/widget.js가 맞춘다) -->
+<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력, 3단 고른 날(기본 오늘)의 상세. 연·월 제목은 앱을 열고,
+     근무일 칸은 한 번 누르면 고르고 고른 칸을 또 누르거나 상세 칸을 누르면 입력 시트를 연다. 빈 곳은 오늘로 돌아간다 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_bg"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="14dp">
 
-    <!-- 1단: 요약. 첫 줄은 월 제목 | 필수 | 초과 를 비율로 나눠 숫자 길이가 바뀌어도 서로 밀지 않는다 -->
+    <!-- 1단: 요약. 첫 줄은 월 제목, 필수 시간, 초과 근무 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/widget_box"
-        android:orientation="vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:baselineAligned="true"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/widget_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.7"
-                android:maxLines="1"
-                android:text="@string/widget_label"
-                android:textColor="@color/widget_text"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.1"
-                android:baselineAligned="true"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/widget_required_label"
-                    style="@style/WidgetSummaryLabel"
-                    android:text="@string/widget_required" />
-
-                <TextView
-                    android:id="@+id/widget_required"
-                    style="@style/WidgetSummaryValue"
-                    android:text="@string/widget_dash" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1.2"
-                android:baselineAligned="true"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/widget_overtime_label"
-                    style="@style/WidgetSummaryLabel"
-                    android:text="@string/widget_overtime" />
-
-                <TextView
-                    android:id="@+id/widget_overtime"
-                    style="@style/WidgetSummaryValue"
-                    android:text="@string/widget_dash" />
-            </LinearLayout>
-        </LinearLayout>
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/widget_average"
-            android:layout_width="match_parent"
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:ellipsize="end"
-            android:lines="1"
+            android:layout_weight="1"
             android:maxLines="1"
+            android:text="@string/widget_label"
+            android:textColor="@color/widget_text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_required_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:text="@string/widget_required"
             android:textColor="@color/widget_muted"
             android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/widget_required"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:text="@string/widget_dash"
+            android:textColor="@color/widget_text"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_overtime_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:text="@string/widget_overtime"
+            android:textColor="@color/widget_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/widget_overtime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_dash"
+            android:textColor="@color/widget_text"
+            android:textSize="18sp"
+            android:textStyle="bold" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_average"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/widget_muted"
+        android:textSize="12sp" />
 
     <!-- 2단: 달력 (요일 줄 + 주 줄은 WorkWidget이 채운다) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
         <TextView android:id="@+id/widget_wd0" style="@style/WidgetWeekday" android:text="일" android:textColor="@color/widget_red" />
@@ -112,21 +96,22 @@
         android:layout_weight="1"
         android:orientation="vertical" />
 
-    <!-- 3단: 고른 날의 출퇴근 시각, 휴게·제외, 근무시간 -->
+    <!-- 3단: 고른 날의 출퇴근 시각과 근무시간. 구분선은 위젯이 못 그리는 View 대신 FrameLayout으로 그린다 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_line" />
+
     <LinearLayout
         android:id="@+id/widget_detail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/widget_box"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:paddingTop="6dp">
 
-        <!-- 왼쪽 두 줄: 날짜·출퇴근 시각, 휴게·제외 (둘째 줄이 비어도 한 줄 높이를 남긴다) -->
+        <!-- 왼쪽 두 줄: 날짜·출퇴근 시각, 제외·휴게 (둘째 줄이 비어도 높이는 같게 한 줄을 남긴다) -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -138,7 +123,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:lines="1"
                 android:maxLines="1"
                 android:textColor="@color/widget_text"
                 android:textSize="13sp" />

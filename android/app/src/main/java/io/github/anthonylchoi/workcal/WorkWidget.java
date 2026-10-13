@@ -37,8 +37,8 @@ public class WorkWidget extends AppWidgetProvider {
     private static final float MAX_SCALE = 1.25f;
     /** 위젯 크기에 따라 키우는 글씨: {뷰 id, 4x4일 때 sp} (달력 칸 글씨는 fill에서) */
     private static final int[][] TEXT_SIZES = {
-        {R.id.widget_title, 16}, {R.id.widget_required_label, 12}, {R.id.widget_required, 16},
-        {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 16}, {R.id.widget_average, 12},
+        {R.id.widget_title, 16}, {R.id.widget_required_label, 12}, {R.id.widget_required, 18},
+        {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18}, {R.id.widget_average, 12},
         {R.id.widget_wd0, 11}, {R.id.widget_wd1, 11}, {R.id.widget_wd2, 11}, {R.id.widget_wd3, 11},
         {R.id.widget_wd4, 11}, {R.id.widget_wd5, 11}, {R.id.widget_wd6, 11},
         {R.id.widget_detail_info, 13}, {R.id.widget_detail_sub, 11},
@@ -113,7 +113,7 @@ public class WorkWidget extends AppWidgetProvider {
             fill(context, views, new JSONObject(json), prefs(context).getString(KEY_SELECTED, null), reset, scale);
         } catch (JSONException e) {
             views.setTextViewText(R.id.widget_average, context.getString(R.string.widget_empty));
-            views.setViewVisibility(R.id.widget_detail_edit, View.INVISIBLE);
+            views.setViewVisibility(R.id.widget_detail_edit, View.GONE);
         }
         return views;
     }
@@ -198,7 +198,7 @@ public class WorkWidget extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_detail_sub, cell == null ? "" : cell.optString("infoSub"));
         views.setTextViewText(R.id.widget_detail_right, cell == null ? "" : cell.optString("infoRight"));
         boolean editable = cell != null && isTappable(cell);
-        views.setViewVisibility(R.id.widget_detail_edit, editable ? View.VISIBLE : View.INVISIBLE);
+        views.setViewVisibility(R.id.widget_detail_edit, editable ? View.VISIBLE : View.GONE);
         if (!editable) return;
         setTextColor(context, views, R.id.widget_detail_right, toneColor(cell.optString("tone")));
         views.setOnClickPendingIntent(R.id.widget_detail,

@@ -11,6 +11,4 @@
     <color name="widget_red">#DC2626</color>
     <color name="widget_blue">#2563EB</color>
     <color name="widget_leave">#7C3AED</color>
-    <color name="widget_box">#F7F8FA</color>
-    <color name="widget_box_line">#CDD3DB</color>
 </resources>

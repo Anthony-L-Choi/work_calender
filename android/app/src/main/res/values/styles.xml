@@ -29,24 +29,4 @@
         <item name="android:textColor">@color/widget_muted</item>
         <item name="android:textSize">11sp</item>
     </style>
-
-    <!-- 위젯 요약 첫 줄: 작은 이름표(필수·초과)와 오른쪽 정렬 굵은 숫자. 숫자 길이가 바뀌어도 이름표 자리는 그대로다 -->
-    <style name="WidgetSummaryLabel">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginEnd">4dp</item>
-        <item name="android:textColor">@color/widget_muted</item>
-        <item name="android:textSize">12sp</item>
-    </style>
-
-    <style name="WidgetSummaryValue">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:gravity">end</item>
-        <item name="android:maxLines">1</item>
-        <item name="android:textColor">@color/widget_text</item>
-        <item name="android:textSize">16sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
 </resources>
