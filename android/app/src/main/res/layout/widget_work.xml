@@ -27,6 +27,7 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/widget_overtime_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
@@ -85,13 +86,13 @@
         android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
-        <TextView style="@style/WidgetWeekday" android:text="일" android:textColor="@color/widget_red" />
-        <TextView style="@style/WidgetWeekday" android:text="월" />
-        <TextView style="@style/WidgetWeekday" android:text="화" />
-        <TextView style="@style/WidgetWeekday" android:text="수" />
-        <TextView style="@style/WidgetWeekday" android:text="목" />
-        <TextView style="@style/WidgetWeekday" android:text="금" />
-        <TextView style="@style/WidgetWeekday" android:text="토" android:textColor="@color/widget_blue" />
+        <TextView android:id="@+id/widget_wd0" style="@style/WidgetWeekday" android:text="일" android:textColor="@color/widget_red" />
+        <TextView android:id="@+id/widget_wd1" style="@style/WidgetWeekday" android:text="월" />
+        <TextView android:id="@+id/widget_wd2" style="@style/WidgetWeekday" android:text="화" />
+        <TextView android:id="@+id/widget_wd3" style="@style/WidgetWeekday" android:text="수" />
+        <TextView android:id="@+id/widget_wd4" style="@style/WidgetWeekday" android:text="목" />
+        <TextView android:id="@+id/widget_wd5" style="@style/WidgetWeekday" android:text="금" />
+        <TextView android:id="@+id/widget_wd6" style="@style/WidgetWeekday" android:text="토" android:textColor="@color/widget_blue" />
     </LinearLayout>
 
     <LinearLayout

@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.text.SimpleDateFormat;
@@ -21,7 +23,8 @@ import org.json.JSONObject;
  * 4x4 홈 화면 위젯: 위에 이번 달 요약, 가운데 달력, 맨 아래 고른 날(기본 오늘)의 상세.
  * 근무일 칸을 한 번 누르면 그날을 고르고(앱을 열지 않고 다시 그린다), 고른 칸을 또 누르거나 상세 칸을 누르면
  * 앱에서 그날 입력 시트를 연다. 연·월 제목은 앱을 열고, 그 밖의 빈 곳·주말·공휴일은 오늘로 돌아간다.
- * 계산은 하지 않고 앱(js/widget.js)이 넘긴 글자를 그린다. 30분마다 다시 그려 날짜가 바뀌면 그날 줄을 고른다
+ * 계산은 하지 않고 앱(js/widget.js)이 넘긴 글자를 그린다. 30분마다 다시 그려 날짜가 바뀌면 그날 줄을 고른다.
+ * 크기는 기본·최소 4x4, 최대 5x6이고 늘리면 글씨도 비례해 키운다 (4x4 = 1배, 최대 1.25배)
  */
 public class WorkWidget extends AppWidgetProvider {
     static final String ACTION_OPEN_DATE = "io.github.anthonylchoi.workcal.OPEN_DATE";
@@ -30,6 +33,16 @@ public class WorkWidget extends AppWidgetProvider {
     private static final String PREFS = "workcal.widget";
     private static final String KEY = "data";
     private static final String KEY_SELECTED = "selected";
+    private static final float BASE_DP = 250f;
+    private static final float MAX_SCALE = 1.25f;
+    /** 위젯 크기에 따라 키우는 글씨: {뷰 id, 4x4일 때 sp} (달력 칸 글씨는 fill에서) */
+    private static final int[][] TEXT_SIZES = {
+        {R.id.widget_title, 16}, {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18},
+        {R.id.widget_filled, 13}, {R.id.widget_average, 12},
+        {R.id.widget_wd0, 11}, {R.id.widget_wd1, 11}, {R.id.widget_wd2, 11}, {R.id.widget_wd3, 11},
+        {R.id.widget_wd4, 11}, {R.id.widget_wd5, 11}, {R.id.widget_wd6, 11},
+        {R.id.widget_detail_info, 13}, {R.id.widget_detail_right, 13}, {R.id.widget_detail_edit, 13},
+    };
 
     /** 앱이 넘긴 값을 저장하고 고른 날을 오늘로 되돌려 놓인 위젯을 모두 다시 그린다 */
     static void save(Context context, String json) {
@@ -41,7 +54,13 @@ public class WorkWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         // 30분마다 다시 그릴 때도 오늘로 돌아간다
         prefs(context).edit().remove(KEY_SELECTED).apply();
-        for (int id : ids) manager.updateAppWidget(id, build(context));
+        for (int id : ids) manager.updateAppWidget(id, build(context, scale(manager.getAppWidgetOptions(id))));
+    }
+
+    /** 위젯 크기를 바꾸면 글씨 크기를 맞춰 다시 그린다 */
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager manager, int id, Bundle options) {
+        manager.updateAppWidget(id, build(context, scale(options)));
     }
 
     /** 위젯 안에서 날짜를 고르거나(EXTRA_DATE) 빈 곳을 눌러 오늘로 돌아간다(날짜 없음) */
@@ -62,11 +81,23 @@ public class WorkWidget extends AppWidgetProvider {
     private static void redraw(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         for (int id : manager.getAppWidgetIds(new ComponentName(context, WorkWidget.class))) {
-            manager.updateAppWidget(id, build(context));
+            manager.updateAppWidget(id, build(context, scale(manager.getAppWidgetOptions(id))));
         }
     }
 
-    private static RemoteViews build(Context context) {
+    /** 세로 화면 기준 가로·세로 중 덜 늘어난 쪽의 배율 (4x4 = 250dp가 1배). 크기를 모르면 1배 */
+    private static float scale(Bundle options) {
+        int width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+        if (width <= 0 || height <= 0) return 1f;
+        return Math.max(1f, Math.min(MAX_SCALE, Math.min(width, height) / BASE_DP));
+    }
+
+    private static void setTextSize(RemoteViews views, int viewId, float sp) {
+        views.setTextViewTextSize(viewId, TypedValue.COMPLEX_UNIT_SP, sp);
+    }
+
+    private static RemoteViews build(Context context, float scale) {
         String json = prefs(context).getString(KEY, null);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_work);
         views.setOnClickPendingIntent(R.id.widget_title, openApp(context, Intent.ACTION_MAIN, null, 0));
@@ -74,10 +105,11 @@ public class WorkWidget extends AppWidgetProvider {
         PendingIntent reset = select(context, null, 300);
         views.setOnClickPendingIntent(R.id.widget_root, reset);
         views.setOnClickPendingIntent(R.id.widget_detail, reset);
+        for (int[] size : TEXT_SIZES) setTextSize(views, size[0], size[1] * scale);
         views.removeAllViews(R.id.widget_calendar);
         try {
             if (json == null) throw new JSONException("no data");
-            fill(context, views, new JSONObject(json), prefs(context).getString(KEY_SELECTED, null), reset);
+            fill(context, views, new JSONObject(json), prefs(context).getString(KEY_SELECTED, null), reset, scale);
         } catch (JSONException e) {
             views.setTextViewText(R.id.widget_average, context.getString(R.string.widget_empty));
             views.setViewVisibility(R.id.widget_detail_edit, View.GONE);
@@ -86,7 +118,7 @@ public class WorkWidget extends AppWidgetProvider {
     }
 
     private static void fill(Context context, RemoteViews views, JSONObject data, String selected,
-            PendingIntent reset) throws JSONException {
+            PendingIntent reset, float scale) throws JSONException {
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         views.setTextViewText(R.id.widget_title, data.getString("title"));
         views.setTextViewText(R.id.widget_overtime, data.getString("overtime"));
@@ -114,6 +146,8 @@ public class WorkWidget extends AppWidgetProvider {
         for (int i = 0; i < slots; i++) {
             if (i % 7 == 0) row = new RemoteViews(context.getPackageName(), R.layout.widget_row);
             RemoteViews cell = new RemoteViews(context.getPackageName(), R.layout.widget_cell);
+            setTextSize(cell, R.id.widget_day, 11 * scale);
+            setTextSize(cell, R.id.widget_hours, 9 * scale);
             int index = i - offset;
             if (index >= 0 && index < cells.length()) {
                 JSONObject c = cells.getJSONObject(index);
