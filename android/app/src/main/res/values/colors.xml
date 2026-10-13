@@ -8,6 +8,7 @@
     <color name="widget_cell">#F0F2F5</color>
     <color name="widget_primary">#2563EB</color>
     <color name="widget_primary_soft">#DBE6FD</color>
+    <color name="widget_band">#EEF3FE</color>
     <color name="widget_red">#DC2626</color>
     <color name="widget_blue">#2563EB</color>
     <color name="widget_leave">#7C3AED</color>

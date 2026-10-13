@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 위젯 1단 요약의 옅은 파랑 띠: 달력 칸 회색과 구분해 요약과 달력의 경계를 보인다 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_band" />
+    <corners android:radius="12dp" />
+</shape>
