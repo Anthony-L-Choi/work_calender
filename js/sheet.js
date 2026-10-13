@@ -196,18 +196,22 @@ form.addEventListener('input', (event) => {
     const inputType = /** @type {InputEvent} */ (event).inputType ?? '';
     const deleting = inputType.startsWith('delete');
     formatTyping(target, deleting);
-    // 'HH:MM'을 다 쳤고 올바른 시각이면 다음 칸으로. 틀린 값이면 머물러 고치게 한다
-    if (!deleting && /^\d{2}:\d{2}$/.test(target.value) && normalizeTime(target.value)) moveNext(target);
+    // 'HH:MM'을 다 쳤고 올바른 시각이면 다음 칸으로. 틀린 값이면 머물러 고치게 한다.
+    // 마지막 칸(제외)은 다 쳐도 키보드를 닫지 않는다 (완료 키를 눌러야 닫힌다)
+    const last = target === timeInputs[timeInputs.length - 1];
+    if (!deleting && !last && /^\d{2}:\d{2}$/.test(target.value) && normalizeTime(target.value)) moveNext(target);
   }
   updateHint();
 });
 
-// 키보드의 다음/완료(Enter): 저장하지 않고 다음 칸으로 옮기거나 키보드를 닫는다
+// 키보드의 다음(Enter): 다음 칸으로 옮긴다. 제외 칸의 완료(Enter): 키보드를 닫고 저장 버튼처럼 저장한다
 for (const input of timeInputs) {
   input.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' || event.isComposing) return;
     event.preventDefault();
     moveNext(input);
+    // blur에서 '930' 같은 값을 '09:30'으로 맞춘 뒤 저장한다
+    if (input === excludeInput) save();
   });
 }
 
@@ -219,8 +223,6 @@ for (const input of timeInputs) {
     input.dataset.prev = input.value;
     input.placeholder = input.value || '00:00';
     input.value = '';
-    // 시트가 화면 아래쪽에 있으므로 키보드가 올라온 뒤 칸을 가운데로 올린다
-    setTimeout(() => input.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
   });
   input.addEventListener('blur', () => {
     if (input.value === '') input.value = input.dataset.prev ?? '';

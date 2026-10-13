@@ -146,5 +146,29 @@ if ('serviceWorker' in navigator && !('Capacitor' in window)) {
   });
 }
 
+/** 달력 칸이 최소 높이(--cell-min)일 때의 메인 화면 높이. 화면이 이보다 작으면 나머지는 스크롤된다 */
+function minHomeHeight() {
+  const cal = $('calendar');
+  const style = getComputedStyle(cal);
+  const rows = Math.ceil(cal.children.length / 7);
+  const calMin = rows * parseFloat(style.getPropertyValue('--cell-min')) + (rows - 1) * parseFloat(style.rowGap);
+  return $('home').offsetHeight - cal.offsetHeight + calMin;
+}
+
+// 화면 높이를 px로 넣는다. 키보드가 열리고 닫혀 높이가 바뀌면 달력이 0.3초 동안 부드럽게 줄고 늘며(style.css),
+// 다 바뀐 뒤 입력 중인 시트 칸을 화면 가운데로 부드럽게 올린다.
+// 달력이 최소 높이보다 더 줄 수는 없으므로 그 아래로는 내려가지 않게 해, 전환 시간 전부가 달력이 주는 데 쓰이게 한다
+let resizeTimer = 0;
+function fitHeight() {
+  const height = Math.max(window.innerHeight, minHomeHeight());
+  document.documentElement.style.setProperty('--app-height', `${height}px`);
+  clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    const el = document.activeElement;
+    if (el instanceof HTMLInputElement && el.closest('#sheet')) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 320);
+}
 render();
 selectToday();
+fitHeight();
+window.addEventListener('resize', fitHeight);
