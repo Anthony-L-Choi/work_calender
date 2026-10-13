@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력. 근무일 칸은 그날 입력 시트를, 연·월 제목은 앱을 연다 -->
+<!-- 4x4 위젯: 1단 이번 달 요약, 2단 달력, 3단 고른 날(기본 오늘)의 상세. 연·월 제목은 앱을 열고,
+     근무일 칸은 한 번 누르면 고르고 고른 칸을 또 누르거나 상세 칸을 누르면 입력 시트를 연다. 빈 곳은 오늘로 돌아간다 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
@@ -99,4 +100,49 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical" />
+
+    <!-- 3단: 고른 날의 출퇴근 시각과 근무시간 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="6dp"
+        android:background="@color/widget_line" />
+
+    <LinearLayout
+        android:id="@+id/widget_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="6dp">
+
+        <TextView
+            android:id="@+id/widget_detail_info"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/widget_text"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/widget_detail_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:maxLines="1"
+            android:textColor="@color/widget_text"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_detail_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:text="@string/widget_edit"
+            android:textColor="@color/widget_muted"
+            android:textSize="13sp" />
+    </LinearLayout>
 </LinearLayout>

@@ -29,6 +29,23 @@ function cellDetail(key, records, holidays) {
   return { text: formatMinutes(minutes), tone: dayTone(minutes) };
 }
 
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+/**
+ * 위젯 맨 아래 상세 칸: 왼쪽은 날짜와 출퇴근 시각, 오른쪽은 근무시간 (색은 cellDetail의 tone).
+ * 제외 시간은 있을 때만 붙이고, 자동 휴게는 근무시간에 이미 빠져 있어 따로 쓰지 않는다
+ */
+function cellInfo(key, records, holidays) {
+  const { month, day } = parseKey(key);
+  const date = `${month}/${day}(${WEEKDAYS[weekdayOf(key)]})`;
+  if (!isBusinessDay(key, holidays)) return { info: `${date} ${holidays.get(key) ?? '쉬는 날'}`, infoRight: '' };
+  const record = records[key];
+  if (record?.leave) return { info: `${date} ${LEAVE_LABELS[record.leave]}`, infoRight: '' };
+  if (!record?.start || !record?.end) return { info: `${date} 입력 없음`, infoRight: '입력' };
+  const exclude = record.excludeMinutes ? ` · 제외 ${formatMinutes(record.excludeMinutes)}` : '';
+  return { info: `${date} ${record.start}~${record.end}${exclude}`, infoRight: `근무 ${formatMinutes(recordMinutes(record))}` };
+}
+
 /**
  * 이번 달 요약과 달력을 위젯에 넘긴다.
  * 하루 평균은 날짜마다 미리 계산해 두어, 앱을 열지 않은 날에도 위젯이 그날 값을 고른다
@@ -55,7 +72,8 @@ export function pushWidget({ year, month, records, holidays, today }) {
     daily,
     offset: weekdayOf(keys[0]),
     cells: keys.map((key) => ({
-      date: key, day: parseKey(key).day, kind: cellKind(key, records, holidays), ...cellDetail(key, records, holidays),
+      date: key, day: parseKey(key).day, kind: cellKind(key, records, holidays),
+      ...cellDetail(key, records, holidays), ...cellInfo(key, records, holidays),
     })),
   };
   cap.nativePromise(PLUGIN, 'update', { data: JSON.stringify(data) }).catch(() => {

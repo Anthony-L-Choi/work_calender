@@ -9,5 +9,6 @@
     <string name="widget_overtime">초과</string>
     <string name="widget_dash">—</string>
     <string name="widget_empty">앱을 한 번 열면 이번 달 요약이 보여요</string>
+    <string name="widget_edit">✎</string>
     <string name="widget_stale">앱을 열면 이번 달로 바뀌어요</string>
 </resources>
