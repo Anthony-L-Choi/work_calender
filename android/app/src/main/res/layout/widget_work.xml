@@ -101,8 +101,8 @@
         android:layout_weight="1"
         android:orientation="vertical" />
 
-    <!-- 3단: 고른 날의 출퇴근 시각과 근무시간 -->
-    <View
+    <!-- 3단: 고른 날의 출퇴근 시각과 근무시간. 구분선은 위젯이 못 그리는 View 대신 FrameLayout으로 그린다 -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="6dp"
