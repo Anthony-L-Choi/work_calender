@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -24,7 +23,7 @@ import org.json.JSONObject;
  * 근무일 칸을 한 번 누르면 그날을 고르고(앱을 열지 않고 다시 그린다), 고른 칸을 또 누르거나 상세 칸을 누르면
  * 앱에서 그날 입력 시트를 연다. 연·월 제목은 앱을 열고, 그 밖의 빈 곳·주말·공휴일은 오늘로 돌아간다.
  * 계산은 하지 않고 앱(js/widget.js)이 넘긴 글자를 그린다. 30분마다 다시 그려 날짜가 바뀌면 그날 줄을 고른다.
- * 크기는 기본·최소 4x4, 최대 5x6이고 늘리면 글씨도 비례해 키운다 (4x4 = 1배, 최대 1.25배)
+ * 크기 조절은 막고 4x4(이 클래스)와 5x5(WorkWidget5, 글씨 1.25배) 두 위젯을 따로 둔다.
  */
 public class WorkWidget extends AppWidgetProvider {
     static final String ACTION_OPEN_DATE = "io.github.anthonylchoi.workcal.OPEN_DATE";
@@ -33,8 +32,6 @@ public class WorkWidget extends AppWidgetProvider {
     private static final String PREFS = "workcal.widget";
     private static final String KEY = "data";
     private static final String KEY_SELECTED = "selected";
-    private static final float BASE_DP = 250f;
-    private static final float MAX_SCALE = 1.25f;
     /** 위젯 크기에 따라 키우는 글씨: {뷰 id, 4x4일 때 sp} (달력 칸 글씨는 fill에서) */
     private static final int[][] TEXT_SIZES = {
         {R.id.widget_title, 16}, {R.id.widget_required_label, 12}, {R.id.widget_required, 18},
@@ -55,13 +52,12 @@ public class WorkWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         // 30분마다 다시 그릴 때도 오늘로 돌아간다
         prefs(context).edit().remove(KEY_SELECTED).apply();
-        for (int id : ids) manager.updateAppWidget(id, build(context, scale(manager.getAppWidgetOptions(id))));
+        for (int id : ids) manager.updateAppWidget(id, build(context, scale()));
     }
 
-    /** 위젯 크기를 바꾸면 글씨 크기를 맞춰 다시 그린다 */
-    @Override
-    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager manager, int id, Bundle options) {
-        manager.updateAppWidget(id, build(context, scale(options)));
+    /** 4x4 글씨에 곱할 배율. 5x5 위젯(WorkWidget5)이 1.25로 바꾼다 */
+    protected float scale() {
+        return 1f;
     }
 
     /** 위젯 안에서 날짜를 고르거나(EXTRA_DATE) 빈 곳을 눌러 오늘로 돌아간다(날짜 없음) */
@@ -79,19 +75,16 @@ public class WorkWidget extends AppWidgetProvider {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
+    /** 놓인 4x4·5x5 위젯을 모두 다시 그린다 (고른 날은 둘이 함께 쓴다) */
     private static void redraw(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        for (int id : manager.getAppWidgetIds(new ComponentName(context, WorkWidget.class))) {
-            manager.updateAppWidget(id, build(context, scale(manager.getAppWidgetOptions(id))));
+        for (WorkWidget widget : new WorkWidget[] {new WorkWidget(), new WorkWidget5()}) {
+            RemoteViews views = null;
+            for (int id : manager.getAppWidgetIds(new ComponentName(context, widget.getClass()))) {
+                if (views == null) views = build(context, widget.scale());
+                manager.updateAppWidget(id, views);
+            }
         }
-    }
-
-    /** 세로 화면 기준 가로·세로 중 덜 늘어난 쪽의 배율 (4x4 = 250dp가 1배). 크기를 모르면 1배 */
-    private static float scale(Bundle options) {
-        int width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
-        int height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-        if (width <= 0 || height <= 0) return 1f;
-        return Math.max(1f, Math.min(MAX_SCALE, Math.min(width, height) / BASE_DP));
     }
 
     private static void setTextSize(RemoteViews views, int viewId, float sp) {

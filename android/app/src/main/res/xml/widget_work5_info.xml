@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 5x5 위젯 (WorkWidget5): 4x4와 같고 글씨만 1.25배. 크기 조절은 막는다 -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_work"
+    android:previewLayout="@layout/widget_work"
+    android:minWidth="320dp"
+    android:minHeight="320dp"
+    android:targetCellWidth="5"
+    android:targetCellHeight="5"
+    android:resizeMode="none"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

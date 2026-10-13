@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x4 위젯 (기본·최소 4x4, 최대 가로 5 x 세로 6). 30분마다 다시 그려 날짜가 바뀌면 오늘 칸과 하루 평균을 바꾼다 -->
+<!-- 4x4 위젯 (WorkWidget). 크기 조절은 막고, 크게 쓰려면 5x5 위젯(widget_work5_info)을 따로 놓는다.
+     30분마다 다시 그려 날짜가 바뀌면 오늘 칸과 하루 평균을 바꾼다 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_description"
     android:initialLayout="@layout/widget_work"
     android:previewLayout="@layout/widget_work"
     android:minWidth="250dp"
     android:minHeight="250dp"
-    android:minResizeWidth="250dp"
-    android:minResizeHeight="250dp"
-    android:maxResizeWidth="370dp"
-    android:maxResizeHeight="440dp"
     android:targetCellWidth="4"
     android:targetCellHeight="4"
-    android:resizeMode="horizontal|vertical"
+    android:resizeMode="none"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen" />

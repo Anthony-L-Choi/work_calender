@@ -24,16 +24,28 @@
 
         </activity>
 
-        <!-- 홈 화면 위젯 (WorkWidget) -->
+        <!-- 홈 화면 위젯: 4x4 (WorkWidget), 5x5 (WorkWidget5, 글씨 1.25배) -->
         <receiver
             android:name=".WorkWidget"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/widget_label_4">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_work_info" />
+        </receiver>
+        <receiver
+            android:name=".WorkWidget5"
+            android:exported="false"
+            android:label="@string/widget_label_5">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_work5_info" />
         </receiver>
 
         <provider

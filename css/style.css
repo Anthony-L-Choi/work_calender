@@ -145,8 +145,17 @@ button { font: inherit; color: inherit; }
 }
 .field input:disabled { opacity: .45; }
 
-.sheet-hint { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
-.sheet-hint:empty { display: none; }
+/* 세 칸 아래 요약 상자: 왼쪽 자동 휴게(작게), 오른쪽 근무시간(크게, 8h보다 많으면 파랑·적으면 빨강) */
+.sheet-hint {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin-top: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+}
+.sheet-hint[hidden] { display: none; }
+.hint-rest { font-size: 14px; color: var(--muted); }
+.hint-work { font-size: 14px; color: var(--muted); }
+.hint-work strong { margin-left: 4px; font-size: 17px; color: var(--text); font-variant-numeric: tabular-nums; }
+.hint-work.over strong { color: var(--blue); }
+.hint-work.under strong { color: var(--red); }
 .error { display: block; color: var(--red); font-size: 12px; min-height: 0; }
 .error:empty { display: none; }
 
