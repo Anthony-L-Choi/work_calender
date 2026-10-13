@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:includeFontPadding="false"
         android:textColor="@color/widget_text"
-        android:textSize="11sp"
+        android:textSize="13sp"
         android:textStyle="bold" />
 
     <TextView
@@ -27,5 +27,5 @@
         android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="@color/widget_muted"
-        android:textSize="9sp" />
+        android:textSize="10sp" />
 </LinearLayout>

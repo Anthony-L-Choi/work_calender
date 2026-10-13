@@ -139,8 +139,8 @@ public class WorkWidget extends AppWidgetProvider {
         for (int i = 0; i < slots; i++) {
             if (i % 7 == 0) row = new RemoteViews(context.getPackageName(), R.layout.widget_row);
             RemoteViews cell = new RemoteViews(context.getPackageName(), R.layout.widget_cell);
-            setTextSize(cell, R.id.widget_day, 11 * scale);
-            setTextSize(cell, R.id.widget_hours, 9 * scale);
+            setTextSize(cell, R.id.widget_day, 13 * scale);
+            setTextSize(cell, R.id.widget_hours, 10 * scale);
             int index = i - offset;
             if (index >= 0 && index < cells.length()) {
                 JSONObject c = cells.getJSONObject(index);
