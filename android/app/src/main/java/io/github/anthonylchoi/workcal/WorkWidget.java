@@ -20,7 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 4x4 홈 화면 위젯: 위에 이번 달 요약, 가운데 달력, 맨 아래 고른 날(기본 오늘)의 상세.
+ * 4x4 홈 화면 위젯: 위에 이번 달 요약(월·필수·초과, 하루 평균), 가운데 달력, 맨 아래 고른 날(기본 오늘)의 상세.
  * 근무일 칸을 한 번 누르면 그날을 고르고(앱을 열지 않고 다시 그린다), 고른 칸을 또 누르거나 상세 칸을 누르면
  * 앱에서 그날 입력 시트를 연다. 연·월 제목은 앱을 열고, 그 밖의 빈 곳·주말·공휴일은 오늘로 돌아간다.
  * 계산은 하지 않고 앱(js/widget.js)이 넘긴 글자를 그린다. 30분마다 다시 그려 날짜가 바뀌면 그날 줄을 고른다.
@@ -37,11 +37,12 @@ public class WorkWidget extends AppWidgetProvider {
     private static final float MAX_SCALE = 1.25f;
     /** 위젯 크기에 따라 키우는 글씨: {뷰 id, 4x4일 때 sp} (달력 칸 글씨는 fill에서) */
     private static final int[][] TEXT_SIZES = {
-        {R.id.widget_title, 16}, {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18},
-        {R.id.widget_filled, 13}, {R.id.widget_average, 12},
+        {R.id.widget_title, 16}, {R.id.widget_required_label, 12}, {R.id.widget_required, 18},
+        {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18}, {R.id.widget_average, 12},
         {R.id.widget_wd0, 11}, {R.id.widget_wd1, 11}, {R.id.widget_wd2, 11}, {R.id.widget_wd3, 11},
         {R.id.widget_wd4, 11}, {R.id.widget_wd5, 11}, {R.id.widget_wd6, 11},
-        {R.id.widget_detail_info, 13}, {R.id.widget_detail_right, 13}, {R.id.widget_detail_edit, 13},
+        {R.id.widget_detail_info, 13}, {R.id.widget_detail_sub, 11},
+        {R.id.widget_detail_right, 15}, {R.id.widget_detail_edit, 15},
     };
 
     /** 앱이 넘긴 값을 저장하고 고른 날을 오늘로 되돌려 놓인 위젯을 모두 다시 그린다 */
@@ -121,12 +122,11 @@ public class WorkWidget extends AppWidgetProvider {
             PendingIntent reset, float scale) throws JSONException {
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         views.setTextViewText(R.id.widget_title, data.getString("title"));
+        views.setTextViewText(R.id.widget_required, data.getString("required"));
         views.setTextViewText(R.id.widget_overtime, data.getString("overtime"));
         int sign = data.getInt("overtimeSign");
         setTextColor(context, views, R.id.widget_overtime,
                 sign > 0 ? R.color.widget_blue : sign < 0 ? R.color.widget_red : R.color.widget_text);
-        views.setTextViewText(R.id.widget_filled, data.getString("filled"));
-        views.setProgressBar(R.id.widget_bar, 100, Math.min(100, data.getInt("percent")), false);
         // 달이 바뀌었는데 앱을 아직 안 열었으면 지난달 값이므로 앱을 열라고 알린다
         views.setTextViewText(R.id.widget_average,
                 data.getJSONObject("daily").optString(today, context.getString(R.string.widget_stale)));
@@ -195,6 +195,7 @@ public class WorkWidget extends AppWidgetProvider {
     /** 맨 아래 상세 칸. 근무일이면 눌러서 그날 입력 시트를 연다 (아니면 build에서 건 오늘로 돌아가기가 남는다) */
     private static void showDetail(Context context, RemoteViews views, JSONObject cell) throws JSONException {
         views.setTextViewText(R.id.widget_detail_info, cell == null ? "" : cell.optString("info"));
+        views.setTextViewText(R.id.widget_detail_sub, cell == null ? "" : cell.optString("infoSub"));
         views.setTextViewText(R.id.widget_detail_right, cell == null ? "" : cell.optString("infoRight"));
         boolean editable = cell != null && isTappable(cell);
         views.setViewVisibility(R.id.widget_detail_edit, editable ? View.VISIBLE : View.GONE);

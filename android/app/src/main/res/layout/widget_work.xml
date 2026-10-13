@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:padding="14dp">
 
-    <!-- 1단: 요약 -->
+    <!-- 1단: 요약. 첫 줄은 월 제목, 필수 시간, 초과 근무 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,9 +21,29 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:maxLines="1"
             android:text="@string/widget_label"
             android:textColor="@color/widget_text"
             android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_required_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:text="@string/widget_required"
+            android:textColor="@color/widget_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/widget_required"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:text="@string/widget_dash"
+            android:textColor="@color/widget_text"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
@@ -43,32 +63,6 @@
             android:textColor="@color/widget_text"
             android:textSize="18sp"
             android:textStyle="bold" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/widget_filled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/widget_text"
-            android:textSize="13sp" />
-
-        <ProgressBar
-            android:id="@+id/widget_bar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="0dp"
-            android:layout_height="6dp"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1"
-            android:max="100"
-            android:progressBackgroundTint="@color/widget_line"
-            android:progressTint="@color/widget_primary" />
     </LinearLayout>
 
     <TextView
@@ -117,15 +111,32 @@
         android:orientation="horizontal"
         android:paddingTop="6dp">
 
-        <TextView
-            android:id="@+id/widget_detail_info"
+        <!-- 왼쪽 두 줄: 날짜·출퇴근 시각, 제외·휴게 (둘째 줄이 비어도 높이는 같게 한 줄을 남긴다) -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@color/widget_text"
-            android:textSize="13sp" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/widget_detail_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/widget_text"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/widget_detail_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:lines="1"
+                android:maxLines="1"
+                android:textColor="@color/widget_muted"
+                android:textSize="11sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/widget_detail_right"
@@ -134,7 +145,7 @@
             android:layout_marginStart="6dp"
             android:maxLines="1"
             android:textColor="@color/widget_text"
-            android:textSize="13sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <TextView
@@ -144,6 +155,6 @@
             android:layout_marginStart="6dp"
             android:text="@string/widget_edit"
             android:textColor="@color/widget_muted"
-            android:textSize="13sp" />
+            android:textSize="15sp" />
     </LinearLayout>
 </LinearLayout>

@@ -1,7 +1,7 @@
 // APK 홈 화면 위젯과 주고받기. 브라우저(PWA)에는 위젯이 없으므로 아무것도 하지 않는다.
 // 위젯은 계산하지 않고 여기서 만든 글자와 칸 종류를 그대로 그린다 (계산은 calc.js)
 import { formatMinutes, formatSignedMinutes, monthKeys, parseKey, weekdayOf } from './date.js';
-import { LEAVE_LABELS, dayTone, isBusinessDay, monthSummary, recordMinutes } from './calc.js';
+import { LEAVE_LABELS, breakMinutes, dayTone, isBusinessDay, monthSummary, recordMinutes, stayMinutes } from './calc.js';
 
 const PLUGIN = 'WidgetBridge';
 const cap = /** @type {any} */ (window).Capacitor;
@@ -32,18 +32,24 @@ function cellDetail(key, records, holidays) {
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 /**
- * 위젯 맨 아래 상세 칸: 왼쪽은 날짜와 출퇴근 시각, 오른쪽은 근무시간 (색은 cellDetail의 tone).
- * 제외 시간은 있을 때만 붙이고, 자동 휴게는 근무시간에 이미 빠져 있어 따로 쓰지 않는다
+ * 위젯 맨 아래 상세 칸 두 줄: 첫 줄은 날짜와 출퇴근 시각, 둘째 줄(infoSub)은 제외(있을 때만)와 자동 휴게,
+ * 오른쪽은 근무시간 (색은 cellDetail의 tone). 근무 기록이 아니면 둘째 줄은 비운다
  */
 function cellInfo(key, records, holidays) {
   const { month, day } = parseKey(key);
   const date = `${month}/${day}(${WEEKDAYS[weekdayOf(key)]})`;
-  if (!isBusinessDay(key, holidays)) return { info: `${date} ${holidays.get(key) ?? '쉬는 날'}`, infoRight: '' };
+  const plain = (info, infoRight = '') => ({ info, infoSub: '', infoRight });
+  if (!isBusinessDay(key, holidays)) return plain(`${date} ${holidays.get(key) ?? '쉬는 날'}`);
   const record = records[key];
-  if (record?.leave) return { info: `${date} ${LEAVE_LABELS[record.leave]}`, infoRight: '' };
-  if (!record?.start || !record?.end) return { info: `${date} 입력 없음`, infoRight: '입력' };
-  const exclude = record.excludeMinutes ? ` · 제외 ${formatMinutes(record.excludeMinutes)}` : '';
-  return { info: `${date} ${record.start}~${record.end}${exclude}`, infoRight: `근무 ${formatMinutes(recordMinutes(record))}` };
+  if (record?.leave) return plain(`${date} ${LEAVE_LABELS[record.leave]}`);
+  if (!record?.start || !record?.end) return plain(`${date} 미입력`);
+  const exclude = record.excludeMinutes ?? 0;
+  const rest = `휴게 ${formatMinutes(breakMinutes(stayMinutes(record.start, record.end, exclude)))}`;
+  return {
+    info: `${date} ${record.start}~${record.end}`,
+    infoSub: exclude ? `제외 ${formatMinutes(exclude)} · ${rest}` : rest,
+    infoRight: `근무 ${formatMinutes(recordMinutes(record))}`,
+  };
 }
 
 /**
@@ -64,11 +70,11 @@ export function pushWidget({ year, month, records, holidays, today }) {
       : `하루 평균 필요 ${formatMinutes(d.dailyAverage)} · 남은 근무일수 ${d.remainingDays}일`;
   }
   const data = {
-    title: `${year}년 ${month}월`,
+    // 위젯은 이번 달만 보이고 폭이 좁아 연도는 뺀다
+    title: `${month}월`,
+    required: formatMinutes(s.requiredMinutes),
     overtime: formatSignedMinutes(s.overtimeMinutes),
     overtimeSign: Math.sign(s.overtimeMinutes),
-    filled: `${formatMinutes(s.filledMinutes)} / ${formatMinutes(s.requiredMinutes)}`,
-    percent: s.percent,
     daily,
     offset: weekdayOf(keys[0]),
     cells: keys.map((key) => ({
