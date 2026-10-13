@@ -51,12 +51,12 @@ button { font: inherit; color: inherit; }
 
 .main { max-width: 480px; margin: 0 auto; padding: 12px 12px calc(12px + var(--inset-bottom)); }
 /* 메인 화면은 상단 바 없이 한 화면에 세로로 쌓고, 달력이 남는 높이를 채운다.
-   화면 높이는 app.js가 --app-height(px)로 넣어, 키보드가 열리고 닫힐 때 달력이 한 번에 줄지 않고 부드럽게 줄고 는다.
-   키보드가 올라와 화면이 줄면 달력 칸은 최소 높이를 지키고 화면이 스크롤된다 */
+   화면 높이(--app-height)와 아래 여백(--home-inset)은 viewport.js가 넣어, 키보드가 열리고 닫힐 때
+   달력 높이와 화면 위치를 함께 부드럽게 바꾼다. 키보드가 열리면 달력 칸은 최소 높이를 지키고 화면이 스크롤된다 */
 #home:not([hidden]) {
   display: flex; flex-direction: column; min-height: 100vh; min-height: var(--app-height, 100dvh);
-  transition: min-height .3s ease-out;
-  padding-top: calc(10px + var(--inset-top)); padding-bottom: calc(10px + var(--inset-bottom));
+  padding-top: calc(10px + var(--inset-top)); padding-bottom: calc(10px + var(--home-inset, var(--inset-bottom)));
+  will-change: transform;
 }
 
 /* 요약 카드 */
