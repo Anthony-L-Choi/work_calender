@@ -3,15 +3,35 @@ import { localIso } from './date.js';
 
 const KEY = 'workcal.v1';
 
+const VERSION = 2;
+
 function empty() {
-  return { version: 1, records: {}, customHolidays: [] };
+  return { version: VERSION, records: {}, customHolidays: [] };
+}
+
+/**
+ * version 1 → 2: 휴게가 자동으로 빠지게 되면서, 옛 기본 기록(08:00~17:20, 제외 80분)을
+ * 새 기본 기록(08:00~17:00, 제외 0분)으로 바꾼다. 둘 다 일 근무 8:00이다. 직접 고친 기록은 그대로 둔다
+ */
+function migrate(data) {
+  if (data.version === 1) {
+    for (const record of Object.values(data.records ?? {})) {
+      if (record.start === '08:00' && record.end === '17:20' && record.excludeMinutes === 80 && !record.leave) {
+        record.end = '17:00';
+        record.excludeMinutes = 0;
+      }
+    }
+    data.version = VERSION;
+    saveData(data);
+  }
+  return data;
 }
 
 /** 저장된 전체 데이터. 없거나 깨졌으면 빈 데이터 */
 export function loadData() {
   try {
     const parsed = JSON.parse(localStorage.getItem(KEY) ?? 'null');
-    if (parsed && parsed.version === 1) return { ...empty(), ...parsed };
+    if (parsed && (parsed.version === 1 || parsed.version === VERSION)) return migrate({ ...empty(), ...parsed });
   } catch {
     // 깨진 값은 빈 데이터로 시작한다
   }

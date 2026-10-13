@@ -2,9 +2,11 @@
 import { minutesToTime, monthKeys, timeToMinutes, toKey, weekdayOf } from './date.js';
 
 export const DAY_MINUTES = 8 * 60;
-// 새 날짜를 열 때 채우는 기본값 (출근 08:00, 제외 1:20)
+// 새 날짜를 열 때 채우는 기본값 (출근 08:00, 제외 0:00. 휴게는 자동으로 빠져 퇴근 17:00)
 export const DEFAULT_START_MINUTES = 8 * 60;
-export const DEFAULT_EXCLUDE_MINUTES = 80;
+export const DEFAULT_EXCLUDE_MINUTES = 0;
+// 자동 휴게: 머문 시간(퇴근 − 출근 − 제외)이 기준 이상이면 그만큼 뺀다. 긴 기준부터 본다
+const BREAK_RULES = [{ from: 9 * 60, minutes: 60 }, { from: 4 * 60 + 30, minutes: 30 }];
 // annual: 필수 시간에서 8h를 뺀다. dday: 근무 0이지만 필수 시간은 그대로다
 export const LEAVE_LABELS = { annual: '연차', dday: 'D-Day' };
 // D-Day 날짜의 기본 기록: 근무 시각 없이 D-Day로 둔다
@@ -41,20 +43,34 @@ export function dDayKey(year, month, holidays) {
   return null;
 }
 
-/** 일 근무시간 = max(0, 퇴근 − 출근 − 제외 시간). 시각이 없으면 0 */
-export function workMinutes(start, end, excludeMinutes = 0) {
+/** 머문 시간(분)에 따른 자동 휴게: 9:00 이상 60분, 4:30 이상 30분, 그 밖에는 0 */
+export function breakMinutes(stayMinutes) {
+  return BREAK_RULES.find((rule) => stayMinutes >= rule.from)?.minutes ?? 0;
+}
+
+/** 머문 시간 = max(0, 퇴근 − 출근 − 제외 시간). 시각이 없으면 0 */
+export function stayMinutes(start, end, excludeMinutes = 0) {
   const s = timeToMinutes(start);
   const e = timeToMinutes(end);
   if (s === null || e === null) return 0;
   return Math.max(0, e - s - (excludeMinutes || 0));
 }
 
-/** 하루 필수 8시간을 채우는 퇴근 시각(분) = 출근 + 8h + 제외 시간. 하루를 넘으면 23:59로 맞춘다 */
-export function requiredEndMinutes(startMinutes, excludeMinutes) {
-  return Math.min(24 * 60 - 1, startMinutes + DAY_MINUTES + excludeMinutes);
+/** 일 근무시간 = 머문 시간 − 자동 휴게 */
+export function workMinutes(start, end, excludeMinutes = 0) {
+  const stay = stayMinutes(start, end, excludeMinutes);
+  return stay - breakMinutes(stay);
 }
 
-/** 기본 근무 시각: 출근 08:00, 퇴근 17:20, 제외 80분 (= 일 근무 8:00) */
+/**
+ * 하루 필수 8시간을 채우는 퇴근 시각(분) = 출근 + 8h + 휴게(8h면 1h) + 제외 시간.
+ * 하루를 넘으면 23:59로 맞춘다
+ */
+export function requiredEndMinutes(startMinutes, excludeMinutes) {
+  return Math.min(24 * 60 - 1, startMinutes + DAY_MINUTES + 60 + excludeMinutes);
+}
+
+/** 기본 근무 시각: 출근 08:00, 퇴근 17:00, 제외 0분 (휴게 1h를 빼면 일 근무 8:00) */
 export function defaultTimes() {
   return {
     start: minutesToTime(DEFAULT_START_MINUTES),

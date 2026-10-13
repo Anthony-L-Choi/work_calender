@@ -145,6 +145,8 @@ button { font: inherit; color: inherit; }
 }
 .field input:disabled { opacity: .45; }
 
+.sheet-hint { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+.sheet-hint:empty { display: none; }
 .error { display: block; color: var(--red); font-size: 12px; min-height: 0; }
 .error:empty { display: none; }
 

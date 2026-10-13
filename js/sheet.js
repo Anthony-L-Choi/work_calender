@@ -1,6 +1,6 @@
 // 날짜 입력 시트: 열기/닫기, 기존 기록 채우기, 기본값, 검증, 저장
-import { parseKey, weekdayOf, minutesToTime, normalizeTime, timeToMinutes } from './date.js';
-import { defaultTimes } from './calc.js';
+import { formatMinutes, parseKey, weekdayOf, minutesToTime, normalizeTime, timeToMinutes } from './date.js';
+import { breakMinutes, defaultTimes, stayMinutes } from './calc.js';
 import { getRecord, saveRecord } from './store.js';
 import { validateRecord } from './validate.js';
 
@@ -32,6 +32,22 @@ function showErrors(errors) {
     const field = /** @type {HTMLElement} */ (el).dataset.errorFor;
     el.textContent = errors[field] ?? '';
   }
+}
+
+/** 세 칸 아래 안내: 자동으로 빠지는 휴게와 그날 근무시간. 연차·D-Day거나 시각을 읽을 수 없으면 비운다 */
+function updateHint() {
+  // 칸을 눌러 비운 동안에는 원래 값으로 계산한다
+  const value = (el) => el.value || (document.activeElement === el ? el.dataset.prev ?? '' : '');
+  const start = normalizeTime(value(startInput));
+  const end = normalizeTime(value(endInput));
+  const exclude = timeToMinutes(normalizeTime(value(excludeInput)) || '00:00');
+  if (readForm().leave || !start || !end || exclude === null) {
+    $('sheet-hint').textContent = '';
+    return;
+  }
+  const stay = stayMinutes(start, end, exclude);
+  const rest = breakMinutes(stay);
+  $('sheet-hint').textContent = `휴게 ${formatMinutes(rest)} 자동 · 근무 ${formatMinutes(stay - rest)}`;
 }
 
 /** 연차나 D-Day를 고르면 근무 시각 칸을 비우고 막는다 */
@@ -72,13 +88,14 @@ export function openSheet(date, { holidayName, isDDay = false, onChange }) {
     fillDefaults();
   }
   showErrors({});
+  updateHint();
   // 위젯에서 다른 날짜를 눌러 다시 열 수 있으므로 열려 있으면 닫고 연다
   if (dialog.open) dialog.close();
   dialog.showModal();
 }
 
 /**
- * 기본값으로 채운다: 출근 08:00, 제외 01:20, 퇴근은 하루 8시간을 채우는 시각. 연차 선택은 푼다.
+ * 기본값으로 채운다: 출근 08:00, 제외 00:00, 퇴근은 하루 8시간을 채우는 시각(휴게 1h 포함 17:00). 연차 선택은 푼다.
  * 그 달 D-Day는 기본값이 D-Day다
  */
 function fillDefaults() {
@@ -139,6 +156,7 @@ form.addEventListener('input', (event) => {
     // 'HH:MM'을 다 쳤고 올바른 시각이면 다음 칸으로. 틀린 값이면 머물러 고치게 한다
     if (!deleting && /^\d{2}:\d{2}$/.test(target.value) && normalizeTime(target.value)) moveNext(target);
   }
+  updateHint();
 });
 
 // 키보드의 다음/완료(Enter): 저장하지 않고 다음 칸으로 옮기거나 키보드를 닫는다
@@ -164,6 +182,7 @@ for (const input of timeInputs) {
     input.placeholder = '00:00';
     const normalized = normalizeTime(input.value);
     if (normalized) input.value = normalized;
+    updateHint();
   });
 }
 
@@ -193,6 +212,7 @@ $('btn-cancel').addEventListener('click', close);
 $('btn-reset').addEventListener('click', () => {
   fillDefaults();
   showErrors({});
+  updateHint();
 });
 
 // 바깥(배경)을 누르면 닫는다
