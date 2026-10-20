@@ -103,6 +103,8 @@ export function monthSummary({ year, month, records, holidays, today }) {
   let annualDays = 0;
   let filledMinutes = 0;
   let remainingDays = 0;
+  /** @type {string[]} 연차가 아닌 근무일 (현재 초과의 그날 몫을 나눌 날) */
+  const workKeys = [];
 
   for (const key of monthKeys(year, month)) {
     // 주말·휴일은 입력할 수 없으므로, 남아 있는 옛 기록도 계산에서 뺀다
@@ -111,6 +113,7 @@ export function monthSummary({ year, month, records, holidays, today }) {
     filledMinutes += recordMinutes(record);
     businessDays += 1;
     if (record?.leave === 'annual') annualDays += 1;
+    else workKeys.push(key);
     // 남은 근무일: 오늘 포함 이후 근무일. 연차·D-Day는 일하지 않으므로 뺀다
     if (key >= today && !record?.leave) remainingDays += 1;
   }
@@ -119,8 +122,9 @@ export function monthSummary({ year, month, records, holidays, today }) {
   const leaveMinutes = annualDays * DAY_MINUTES;
   const baseMinutes = Math.min(businessDays * DAY_MINUTES, weeklyCapMinutes(monthKeys(year, month).length));
   const requiredMinutes = Math.max(0, baseMinutes - leaveMinutes);
-  // 초과 근무 = 채운 시간 − 필수 시간 (음수면 부족). 남은 날의 기본 기록 8h도 채운 시간에 들어 있다
+  // 예상 초과 = 채운 시간 − 필수 시간 (음수면 부족). 남은 날의 기본 기록 8h도 채운 시간에 들어 있다
   const overtimeMinutes = filledMinutes - requiredMinutes;
+  const currentOvertimeMinutes = currentOvertime(workKeys, records, today, businessDays * DAY_MINUTES - baseMinutes);
   const percent = requiredMinutes === 0 ? 100 : Math.floor((filledMinutes / requiredMinutes) * 100);
   // 하루 평균 = 8h − 초과 ÷ 남은 근무일 (부족하면 8h보다 늘고 초과면 준다). 분 단위 올림, 0 미만은 0
   const dailyAverage = remainingDays === 0
@@ -129,6 +133,27 @@ export function monthSummary({ year, month, records, holidays, today }) {
 
   return {
     businessDays, annualDays, leaveMinutes, requiredMinutes, filledMinutes,
-    overtimeMinutes, remainingDays, percent, dailyAverage,
+    overtimeMinutes, currentOvertimeMinutes, remainingDays, percent, dailyAverage,
   };
+}
+
+/**
+ * 현재 초과 = 어제까지 근무일의 (근무시간 − 그날 몫) 합. 그날 몫은 8h에서, 주 40시간 상한으로 준 시간을
+ * 연차 아닌 근무일에 분 단위로 고르게 나눠 뺀 값이다. 몫을 모두 더하면 필수 시간과 같아 월말에는 예상 초과와 같다
+ * @param {string[]} workKeys 연차가 아닌 근무일 (날짜순)
+ * @param {Record<string, any>} records
+ * @param {string} today 이 날 전까지만 센다
+ * @param {number} capCutMinutes 근무일 × 8h − 상한을 적용한 기준 시간
+ * @returns {number|null} 지난 근무일이 없으면 null
+ */
+export function currentOvertime(workKeys, records, today, capCutMinutes) {
+  const n = workKeys.length;
+  /** @type {number|null} */
+  let total = null;
+  workKeys.forEach((key, i) => {
+    if (key >= today) return;
+    const share = Math.floor((capCutMinutes * (i + 1)) / n) - Math.floor((capCutMinutes * i) / n);
+    total = (total ?? 0) + recordMinutes(records[key]) - (DAY_MINUTES - share);
+  });
+  return total;
 }

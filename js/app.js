@@ -42,16 +42,23 @@ function render() {
 
 function renderSummary(s) {
   $('month-title').textContent = `${view.year}년 ${view.month}월`;
-  $('sum-days').textContent = `근무 ${s.businessDays}일`
+  $('sum-days').textContent = `필수 ${formatMinutes(s.requiredMinutes)} · 근무 ${s.businessDays}일`
     + (s.annualDays > 0 ? ` (연차 ${s.annualDays}일 −${formatMinutes(s.leaveMinutes)})` : '');
-  $('sum-required').textContent = formatMinutes(s.requiredMinutes);
-  // 초과 근무: 양수는 +파랑, 음수는 −빨강, 0은 기본색
-  const overtime = $('sum-overtime');
-  overtime.textContent = formatSignedMinutes(s.overtimeMinutes);
-  overtime.classList.toggle('plus', s.overtimeMinutes > 0);
-  overtime.classList.toggle('minus', s.overtimeMinutes < 0);
+  showSigned($('sum-current'), s.currentOvertimeMinutes);
+  showSigned($('sum-overtime'), s.overtimeMinutes);
   $('sum-average').textContent = s.dailyAverage === null ? '—' : formatMinutes(s.dailyAverage);
   $('sum-remaining').textContent = `${s.remainingDays}일`;
+}
+
+/**
+ * 초과 근무: 양수는 +파랑, 음수는 −빨강, 0은 기본색, 값이 없으면(지난 근무일 없음) —
+ * @param {HTMLElement} el
+ * @param {number|null} minutes
+ */
+function showSigned(el, minutes) {
+  el.textContent = minutes === null ? '—' : formatSignedMinutes(minutes);
+  el.classList.toggle('plus', minutes !== null && minutes > 0);
+  el.classList.toggle('minus', minutes !== null && minutes < 0);
 }
 
 function renderCalendar(records, holidays, today) {

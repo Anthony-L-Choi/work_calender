@@ -34,7 +34,7 @@ public class WorkWidget extends AppWidgetProvider {
     private static final String KEY_SELECTED = "selected";
     /** 위젯 크기에 따라 키우는 글씨: {뷰 id, 4x4일 때 sp} (달력 칸 글씨는 fill에서) */
     private static final int[][] TEXT_SIZES = {
-        {R.id.widget_title, 16}, {R.id.widget_required_label, 12}, {R.id.widget_required, 18},
+        {R.id.widget_title, 16}, {R.id.widget_current_label, 12}, {R.id.widget_current, 18},
         {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18}, {R.id.widget_average, 12},
         {R.id.widget_wd0, 11}, {R.id.widget_wd1, 11}, {R.id.widget_wd2, 11}, {R.id.widget_wd3, 11},
         {R.id.widget_wd4, 11}, {R.id.widget_wd5, 11}, {R.id.widget_wd6, 11},
@@ -116,7 +116,14 @@ public class WorkWidget extends AppWidgetProvider {
             PendingIntent reset, float scale) throws JSONException {
         String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
         views.setTextViewText(R.id.widget_title, data.getString("title"));
-        views.setTextViewText(R.id.widget_required, data.getString("required"));
+        // 현재 초과(어제까지)는 날짜마다 미리 계산되어 있어 오늘 값을 고른다
+        JSONObject current = data.optJSONObject("current");
+        JSONObject now = current == null ? null : current.optJSONObject(today);
+        views.setTextViewText(R.id.widget_current,
+                now == null ? context.getString(R.string.widget_dash) : now.getString("text"));
+        int nowSign = now == null ? 0 : now.getInt("sign");
+        setTextColor(context, views, R.id.widget_current,
+                nowSign > 0 ? R.color.widget_blue : nowSign < 0 ? R.color.widget_red : R.color.widget_text);
         views.setTextViewText(R.id.widget_overtime, data.getString("overtime"));
         int sign = data.getInt("overtimeSign");
         setTextColor(context, views, R.id.widget_overtime,

@@ -55,7 +55,7 @@ function cellInfo(key, records, holidays) {
 
 /**
  * 이번 달 요약과 달력을 위젯에 넘긴다.
- * 하루 평균은 날짜마다 미리 계산해 두어, 앱을 열지 않은 날에도 위젯이 그날 값을 고른다
+ * 하루 평균과 현재 초과는 날짜마다 미리 계산해 두어, 앱을 열지 않은 날에도 위젯이 그날 값을 고른다
  * @param {{year: number, month: number, records: Record<string, any>, holidays: Map<string,string>, today: string}} p
  */
 export function pushWidget({ year, month, records, holidays, today }) {
@@ -64,16 +64,21 @@ export function pushWidget({ year, month, records, holidays, today }) {
   const keys = monthKeys(year, month);
   /** @type {Record<string, string>} */
   const daily = {};
+  /** @type {Record<string, {text: string, sign: number}>} */
+  const current = {};
+  const required = `필수 ${formatMinutes(s.requiredMinutes)}`;
   for (const key of keys) {
     const d = monthSummary({ year, month, records, holidays, today: key });
     daily[key] = d.dailyAverage === null
-      ? '남은 근무일 없음'
-      : `하루 평균 필요 ${formatMinutes(d.dailyAverage)} · 남은 근무일수 ${d.remainingDays}일`;
+      ? `${required} · 남은 근무일 없음`
+      : `${required} · 하루 평균 ${formatMinutes(d.dailyAverage)} · 남은 ${d.remainingDays}일`;
+    const c = d.currentOvertimeMinutes;
+    current[key] = c === null ? { text: '—', sign: 0 } : { text: formatSignedMinutes(c), sign: Math.sign(c) };
   }
   const data = {
     // 위젯은 이번 달만 보이고 폭이 좁아 연도는 뺀다
     title: `${month}월`,
-    required: formatMinutes(s.requiredMinutes),
+    current,
     overtime: formatSignedMinutes(s.overtimeMinutes),
     overtimeSign: Math.sign(s.overtimeMinutes),
     daily,

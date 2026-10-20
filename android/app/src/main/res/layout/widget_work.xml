@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:padding="14dp">
 
-    <!-- 1단: 요약. 옅은 파랑 띠(widget_band)로 감싸 달력과 경계를 나눈다. 첫 줄은 월 제목, 필수 시간, 초과 근무 -->
+    <!-- 1단: 요약. 옅은 파랑 띠(widget_band)로 감싸 달력과 경계를 나눈다. 첫 줄은 월 제목, 현재(어제까지)·예상(이번 달) 초과, 둘째 줄은 필수·하루 평균·남은 근무일 -->
     <LinearLayout
         android:id="@+id/widget_summary"
         android:layout_width="match_parent"
@@ -39,16 +39,16 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/widget_required_label"
+            android:id="@+id/widget_current_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
-            android:text="@string/widget_required"
+            android:text="@string/widget_current"
             android:textColor="@color/widget_muted"
             android:textSize="12sp" />
 
         <TextView
-            android:id="@+id/widget_required"
+            android:id="@+id/widget_current"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"

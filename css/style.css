@@ -66,12 +66,12 @@ button { font: inherit; color: inherit; }
   padding: 8px 12px 10px;
   border: 1px solid var(--line);
 }
-/* 첫 줄: 월 제목 · 근무일수 · ⚙ */
-.summary-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+/* 첫 줄: 월 제목 · ⚙, 둘째 줄: 필수 · 근무일수 (작게) */
+.summary-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .summary-head h2 { margin: 0; font-size: 17px; white-space: nowrap; }
-.summary-days { flex: 1; min-width: 0; color: var(--muted); font-size: 13px; }
+.summary-days { margin: 0 0 6px; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .summary-head .icon-btn { padding: 2px 8px; font-size: 16px; }
-/* 4칸 한 줄: 필수·초과(이번 달 전체), 하루 평균·남은 근무일(앞으로) */
+/* 4칸 한 줄: 현재(어제까지)·예상(이번 달 전체) 초과, 하루 평균·남은 근무일(앞으로) */
 .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 0; text-align: center; }
 .summary-grid dt { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .summary-grid dd { margin: 1px 0 0; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
