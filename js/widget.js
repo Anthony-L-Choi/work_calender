@@ -66,18 +66,17 @@ export function pushWidget({ year, month, records, holidays, today }) {
   const daily = {};
   /** @type {Record<string, {text: string, sign: number}>} */
   const current = {};
-  const required = `필수 ${formatMinutes(s.requiredMinutes)}`;
   for (const key of keys) {
     const d = monthSummary({ year, month, records, holidays, today: key });
-    daily[key] = d.dailyAverage === null
-      ? `${required} · 남은 근무일 없음`
-      : `${required} · 하루 평균 ${formatMinutes(d.dailyAverage)} · 남은 ${d.remainingDays}일`;
+    const average = d.dailyAverage === null ? '—' : formatMinutes(d.dailyAverage);
+    daily[key] = d.remainingDays === 0 ? '남은 근무일 없음' : `남은 ${d.remainingDays}일 · 하루 평균 ${average}`;
     const c = d.currentOvertimeMinutes;
     current[key] = c === null ? { text: '—', sign: 0 } : { text: formatSignedMinutes(c), sign: Math.sign(c) };
   }
   const data = {
     // 위젯은 이번 달만 보이고 폭이 좁아 연도는 뺀다
     title: `${month}월`,
+    required: `필수 ${formatMinutes(s.requiredMinutes)}`,
     current,
     overtime: formatSignedMinutes(s.overtimeMinutes),
     overtimeSign: Math.sign(s.overtimeMinutes),

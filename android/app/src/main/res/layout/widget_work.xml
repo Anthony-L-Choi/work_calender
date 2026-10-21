@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:padding="14dp">
 
-    <!-- 1단: 요약. 옅은 파랑 띠(widget_band)로 감싸 달력과 경계를 나눈다. 첫 줄은 월 제목, 현재(어제까지)·예상(이번 달) 초과, 둘째 줄은 필수·하루 평균·남은 근무일 -->
+    <!-- 1단: 요약. 옅은 파랑 띠(widget_band)로 감싸 달력과 경계를 나눈다. 첫 줄은 월 제목, 현재(어제까지)·예상(이번 달) 초과, 둘째 줄은 왼쪽 필수, 오른쪽 남은 근무일·하루 평균 -->
     <LinearLayout
         android:id="@+id/widget_summary"
         android:layout_width="match_parent"
@@ -76,13 +76,33 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/widget_average"
+    <!-- 둘째 줄: 왼쪽 필수, 오른쪽 정렬로 남은 근무일·하루 평균 -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:textColor="@color/widget_muted"
-        android:textSize="12sp" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_required"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/widget_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/widget_average"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:gravity="end"
+            android:maxLines="1"
+            android:textColor="@color/widget_muted"
+            android:textSize="12sp" />
+    </LinearLayout>
     </LinearLayout>
 
     <!-- 2단: 달력 (요일 줄 + 주 줄은 WorkWidget이 채운다) -->

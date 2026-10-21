@@ -84,6 +84,16 @@ export function recordMinutes(record) {
   return record ? workMinutes(record.start, record.end, record.excludeMinutes ?? 0) : 0;
 }
 
+/** 기록이 없거나 기본 기록(08:00~17:00, 제외 0, 연차·D-Day 아님) 그대로면 수정 안 한 날
+ * @param {{start?: string|null, end?: string|null, excludeMinutes?: number|null, leave?: string|null}|undefined} record
+ */
+export function isUntouched(record) {
+  if (!record) return true;
+  const d = defaultTimes();
+  return !record.leave && record.start === d.start && record.end === d.end
+    && (record.excludeMinutes ?? 0) === d.excludeMinutes;
+}
+
 /** 하루 근무시간을 8h와 비교: 많으면 over, 적으면 under, 같으면 even (달력·위젯 글자색) */
 export function dayTone(minutes) {
   return minutes > DAY_MINUTES ? 'over' : minutes < DAY_MINUTES ? 'under' : 'even';
@@ -103,6 +113,9 @@ export function monthSummary({ year, month, records, holidays, today }) {
   let annualDays = 0;
   let filledMinutes = 0;
   let remainingDays = 0;
+  // 오늘부터 수정 안 한(기본 기록 그대로인) 근무일: 하루 평균을 나눌 날
+  let openDays = 0;
+  let openMinutes = 0;
   /** @type {string[]} 연차가 아닌 근무일 (현재 초과의 그날 몫을 나눌 날) */
   const workKeys = [];
 
@@ -115,7 +128,13 @@ export function monthSummary({ year, month, records, holidays, today }) {
     if (record?.leave === 'annual') annualDays += 1;
     else workKeys.push(key);
     // 남은 근무일: 오늘 포함 이후 근무일. 연차·D-Day는 일하지 않으므로 뺀다
-    if (key >= today && !record?.leave) remainingDays += 1;
+    if (key >= today && !record?.leave) {
+      remainingDays += 1;
+      if (isUntouched(record)) {
+        openDays += 1;
+        openMinutes += recordMinutes(record);
+      }
+    }
   }
 
   // 필수 = min(근무일 × 8h, 40h ÷ 7 × 월 일수(분 올림)) − 연차일수 × 8h
@@ -126,10 +145,10 @@ export function monthSummary({ year, month, records, holidays, today }) {
   const overtimeMinutes = filledMinutes - requiredMinutes;
   const currentOvertimeMinutes = currentOvertime(workKeys, records, today, businessDays * DAY_MINUTES - baseMinutes);
   const percent = requiredMinutes === 0 ? 100 : Math.floor((filledMinutes / requiredMinutes) * 100);
-  // 하루 평균 = 8h − 초과 ÷ 남은 근무일 (부족하면 8h보다 늘고 초과면 준다). 분 단위 올림, 0 미만은 0
-  const dailyAverage = remainingDays === 0
+  // 하루 평균 = (필수 − 수정 안 한 날을 뺀 채운 시간) ÷ 오늘부터 수정 안 한 근무일. 분 단위 올림, 0 미만은 0
+  const dailyAverage = openDays === 0
     ? null
-    : Math.max(0, Math.ceil(DAY_MINUTES - overtimeMinutes / remainingDays));
+    : Math.max(0, Math.ceil((requiredMinutes - (filledMinutes - openMinutes)) / openDays));
 
   return {
     businessDays, annualDays, leaveMinutes, requiredMinutes, filledMinutes,

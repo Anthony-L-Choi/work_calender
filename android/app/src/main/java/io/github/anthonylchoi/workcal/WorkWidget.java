@@ -35,7 +35,8 @@ public class WorkWidget extends AppWidgetProvider {
     /** 위젯 크기에 따라 키우는 글씨: {뷰 id, 4x4일 때 sp} (달력 칸 글씨는 fill에서) */
     private static final int[][] TEXT_SIZES = {
         {R.id.widget_title, 16}, {R.id.widget_current_label, 12}, {R.id.widget_current, 18},
-        {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18}, {R.id.widget_average, 12},
+        {R.id.widget_overtime_label, 12}, {R.id.widget_overtime, 18},
+        {R.id.widget_required, 12}, {R.id.widget_average, 12},
         {R.id.widget_wd0, 11}, {R.id.widget_wd1, 11}, {R.id.widget_wd2, 11}, {R.id.widget_wd3, 11},
         {R.id.widget_wd4, 11}, {R.id.widget_wd5, 11}, {R.id.widget_wd6, 11},
         {R.id.widget_detail_info, 13}, {R.id.widget_detail_sub, 11},
@@ -106,7 +107,8 @@ public class WorkWidget extends AppWidgetProvider {
             if (json == null) throw new JSONException("no data");
             fill(context, views, new JSONObject(json), prefs(context).getString(KEY_SELECTED, null), reset, scale);
         } catch (JSONException e) {
-            views.setTextViewText(R.id.widget_average, context.getString(R.string.widget_empty));
+            views.setTextViewText(R.id.widget_required, context.getString(R.string.widget_empty));
+            views.setTextViewText(R.id.widget_average, "");
             views.setViewVisibility(R.id.widget_detail_edit, View.GONE);
         }
         return views;
@@ -128,9 +130,12 @@ public class WorkWidget extends AppWidgetProvider {
         int sign = data.getInt("overtimeSign");
         setTextColor(context, views, R.id.widget_overtime,
                 sign > 0 ? R.color.widget_blue : sign < 0 ? R.color.widget_red : R.color.widget_text);
+        // 둘째 줄: 왼쪽 필수, 오른쪽 그날의 남은 근무일·하루 평균.
         // 달이 바뀌었는데 앱을 아직 안 열었으면 지난달 값이므로 앱을 열라고 알린다
-        views.setTextViewText(R.id.widget_average,
-                data.getJSONObject("daily").optString(today, context.getString(R.string.widget_stale)));
+        String daily = data.getJSONObject("daily").optString(today, null);
+        views.setTextViewText(R.id.widget_required,
+                daily == null ? context.getString(R.string.widget_stale) : data.optString("required"));
+        views.setTextViewText(R.id.widget_average, daily == null ? "" : daily);
 
         JSONArray cells = data.getJSONArray("cells");
         // 상세 칸에 보일 날: 고른 날, 없거나 이번 달이 아니면 오늘 (달이 지났으면 비운다)
