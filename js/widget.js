@@ -45,7 +45,7 @@ function cellInfo(key, records, holidays) {
   if (record?.leave) return plain(`${date} ${LEAVE_LABELS[record.leave]}`);
   if (!record?.start || !record?.end) return plain(`${date} 미입력`);
   const exclude = record.excludeMinutes ?? 0;
-  const rest = breakMinutes(stayMinutes(record.start, record.end, exclude));
+  const rest = breakMinutes(stayMinutes(record.start, record.end));
   return {
     info: `${date} ${record.start}~${record.end}`,
     infoSub: `휴게 ${formatMinutes(rest)} · 제외 ${formatMinutes(exclude)}`,

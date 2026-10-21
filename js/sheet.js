@@ -1,6 +1,6 @@
 // 달력 아래에 늘 두는 날짜 입력 시트: 날짜 바꾸기, 기존 기록 채우기, 기본값, 검증, 저장
 import { formatMinutes, parseKey, weekdayOf, minutesToTime, normalizeTime, timeToMinutes } from './date.js';
-import { breakMinutes, dayTone, defaultTimes, stayMinutes } from './calc.js';
+import { breakMinutes, dayTone, defaultTimes, stayMinutes, workMinutes } from './calc.js';
 import { getRecord, saveRecord } from './store.js';
 import { validateRecord } from './validate.js';
 
@@ -63,9 +63,8 @@ function updateHint() {
   const hint = $('sheet-hint');
   hint.hidden = Boolean(readForm().leave || !start || !end || exclude === null);
   if (hint.hidden) return;
-  const stay = stayMinutes(start, end, exclude);
-  const rest = breakMinutes(stay);
-  const work = stay - rest;
+  const rest = breakMinutes(stayMinutes(start, end));
+  const work = workMinutes(start, end, exclude);
   $('hint-rest').textContent = `휴게 ${formatMinutes(rest)} 자동`;
   const workEl = $('hint-work');
   workEl.className = `hint-work ${dayTone(work)}`;
