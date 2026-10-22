@@ -46,6 +46,8 @@ function renderSummary(s) {
     + (s.annualDays > 0 ? ` (연차 ${s.annualDays}일 −${formatMinutes(s.leaveMinutes)})` : '');
   showSigned($('sum-current'), s.currentOvertimeMinutes);
   showSigned($('sum-overtime'), s.overtimeMinutes);
+  // 하루 평균 이름표는 나눈 날 수로 `5일 평균`. 남은 입력일이 없으면 `입력일 평균`과 —
+  $('sum-average-label').textContent = s.openDays > 0 ? `${s.openDays}일 평균` : '입력일 평균';
   $('sum-average').textContent = s.dailyAverage === null ? '—' : formatMinutes(s.dailyAverage);
   $('sum-remaining').textContent = `${s.remainingDays}일`;
   // 남은 입력일: 남은 근무일 중 수정 안 한 날. 하루 평균은 이 날들에만 나눈다

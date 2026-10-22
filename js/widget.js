@@ -55,7 +55,8 @@ function cellInfo(key, records, holidays) {
 
 /**
  * 위젯 둘째 줄 오른쪽: 남은 근무일과 하루 평균. 평균을 나눈 날(수정 안 한 날)이 남은 날보다 적으면
- * `남은 6일 중 5일 평균 7:59`로 나눈 날 수를 함께 보인다
+ * `남은 6일 중 5일 평균 7:59`로 나눈 날 수를 함께 보이고,
+ * 같으면 `남은 6일 평균 8:00`으로 쓴다
  * @param {{remainingDays: number, openDays: number, dailyAverage: number|null}} s
  */
 function dailyText({ remainingDays, openDays, dailyAverage }) {
@@ -63,7 +64,7 @@ function dailyText({ remainingDays, openDays, dailyAverage }) {
   if (dailyAverage === null) return `남은 ${remainingDays}일 · 모두 입력함`;
   const average = formatMinutes(dailyAverage);
   if (openDays < remainingDays) return `남은 ${remainingDays}일 중 ${openDays}일 평균 ${average}`;
-  return `남은 ${remainingDays}일 · 하루 평균 ${average}`;
+  return `남은 ${remainingDays}일 평균 ${average}`;
 }
 
 /**
