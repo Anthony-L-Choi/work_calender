@@ -48,6 +48,8 @@ function renderSummary(s) {
   showSigned($('sum-overtime'), s.overtimeMinutes);
   $('sum-average').textContent = s.dailyAverage === null ? '—' : formatMinutes(s.dailyAverage);
   $('sum-remaining').textContent = `${s.remainingDays}일`;
+  // 남은 입력일: 남은 근무일 중 수정 안 한 날. 하루 평균은 이 날들에만 나눈다
+  $('sum-open').textContent = `${s.openDays}일`;
 }
 
 /**

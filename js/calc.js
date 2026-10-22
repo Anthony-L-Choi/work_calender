@@ -152,7 +152,7 @@ export function monthSummary({ year, month, records, holidays, today }) {
 
   return {
     businessDays, annualDays, leaveMinutes, requiredMinutes, filledMinutes,
-    overtimeMinutes, currentOvertimeMinutes, remainingDays, percent, dailyAverage,
+    overtimeMinutes, currentOvertimeMinutes, remainingDays, openDays, percent, dailyAverage,
   };
 }
 

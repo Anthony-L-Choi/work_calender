@@ -54,6 +54,19 @@ function cellInfo(key, records, holidays) {
 }
 
 /**
+ * 위젯 둘째 줄 오른쪽: 남은 근무일과 하루 평균. 평균을 나눈 날(수정 안 한 날)이 남은 날보다 적으면
+ * `남은 6일 중 5일 평균 7:59`로 나눈 날 수를 함께 보인다
+ * @param {{remainingDays: number, openDays: number, dailyAverage: number|null}} s
+ */
+function dailyText({ remainingDays, openDays, dailyAverage }) {
+  if (remainingDays === 0) return '남은 근무일 없음';
+  if (dailyAverage === null) return `남은 ${remainingDays}일 · 모두 입력함`;
+  const average = formatMinutes(dailyAverage);
+  if (openDays < remainingDays) return `남은 ${remainingDays}일 중 ${openDays}일 평균 ${average}`;
+  return `남은 ${remainingDays}일 · 하루 평균 ${average}`;
+}
+
+/**
  * 이번 달 요약과 달력을 위젯에 넘긴다.
  * 하루 평균과 현재 초과는 날짜마다 미리 계산해 두어, 앱을 열지 않은 날에도 위젯이 그날 값을 고른다
  * @param {{year: number, month: number, records: Record<string, any>, holidays: Map<string,string>, today: string}} p
@@ -68,8 +81,7 @@ export function pushWidget({ year, month, records, holidays, today }) {
   const current = {};
   for (const key of keys) {
     const d = monthSummary({ year, month, records, holidays, today: key });
-    const average = d.dailyAverage === null ? '—' : formatMinutes(d.dailyAverage);
-    daily[key] = d.remainingDays === 0 ? '남은 근무일 없음' : `남은 ${d.remainingDays}일 · 하루 평균 ${average}`;
+    daily[key] = dailyText(d);
     const c = d.currentOvertimeMinutes;
     current[key] = c === null ? { text: '—', sign: 0 } : { text: formatSignedMinutes(c), sign: Math.sign(c) };
   }

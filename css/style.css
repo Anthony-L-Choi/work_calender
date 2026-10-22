@@ -72,8 +72,13 @@ button { font: inherit; color: inherit; }
 .summary-days { margin: 0 0 6px; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .summary-head .icon-btn { padding: 2px 8px; font-size: 16px; }
 /* 4칸 한 줄: 현재(어제까지)·예상(이번 달 전체) 초과, 하루 평균·남은 근무일(앞으로) */
-.summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 0; text-align: center; }
-.summary-grid dt { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.summary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; margin: 0; text-align: center; }
+.summary-grid dt { color: var(--muted); font-size: 11px; letter-spacing: -0.04em; white-space: nowrap; }
+/* 아주 좁은 화면(320px 등)에서는 5칸 이름표가 붙지 않게 단어 단위로 두 줄로 나눈다 */
+@media (max-width: 340px) {
+  .summary-grid > div { display: flex; flex-direction: column; justify-content: flex-end; }
+  .summary-grid dt { white-space: normal; word-break: keep-all; line-height: 1.2; }
+}
 .summary-grid dd { margin: 1px 0 0; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .summary-grid dd.plus { color: var(--blue); }
 .summary-grid dd.minus { color: var(--red); }

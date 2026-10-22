@@ -38,7 +38,7 @@
   </section>
 
   <main class="main" id="home">
-    <!-- 한 화면: 요약 띠(월 제목·⚙ / 필수·근무일수 한 줄 / 4칸) / 달력(남는 높이를 채움) / 입력 시트 -->
+    <!-- 한 화면: 요약 띠(월 제목·⚙ / 필수·근무일수 한 줄 / 5칸) / 달력(남는 높이를 채움) / 입력 시트 -->
     <section class="summary" id="summary" aria-live="polite">
       <div class="summary-head">
         <h2 id="month-title"></h2>
@@ -48,8 +48,9 @@
       <dl class="summary-grid">
         <div><dt>현재</dt><dd id="sum-current"></dd></div>
         <div><dt>예상</dt><dd id="sum-overtime"></dd></div>
-        <div><dt>하루 평균</dt><dd id="sum-average"></dd></div>
         <div><dt>남은 근무일</dt><dd id="sum-remaining"></dd></div>
+        <div><dt>남은 입력일</dt><dd id="sum-open"></dd></div>
+        <div><dt>하루 평균</dt><dd id="sum-average"></dd></div>
       </dl>
     </section>
 
