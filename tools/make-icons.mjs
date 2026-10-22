@@ -103,6 +103,9 @@ for (const size of [192, 512]) {
   console.log(`icons/icon-${size}.png`);
 }
 
+// 그림 크기 비율. 적응형 아이콘 전경은 108dp 중 가운데 72dp만 보이므로 줄여야 둘레에 여백이 남는다
+const SCALE = { 'splash.png': 0.45, 'ic_launcher_foreground.png': 0.7 };
+
 // APK: Capacitor가 만든 기본 그림을 같은 크기로 덮어쓴다 (크기는 기존 PNG 헤더에서 읽는다)
 if (existsSync(ANDROID_RES)) {
   for (const dir of readdirSync(ANDROID_RES)) {
@@ -111,7 +114,7 @@ if (existsSync(ANDROID_RES)) {
       if (!existsSync(file)) continue;
       const head = readFileSync(file).subarray(16, 24);
       const [w, h] = [head.readUInt32BE(0), head.readUInt32BE(4)];
-      writeFileSync(file, png(w, h, name === 'splash.png' ? 0.45 : 1));
+      writeFileSync(file, png(w, h, SCALE[name] ?? 1));
     }
   }
   console.log('android/app/src/main/res: 런처 아이콘·splash');
