@@ -251,9 +251,9 @@ function save() {
   current.onChange();
   // 저장 버튼에 잠깐 '저장됨'을 보인다
   const button = $('btn-save');
-  button.textContent = '저장됨';
+  button.classList.add('saved');
   clearTimeout(savedTimer);
-  savedTimer = window.setTimeout(() => { button.textContent = '저장'; }, 1200);
+  savedTimer = window.setTimeout(() => { button.classList.remove('saved'); }, 1200);
   return true;
 }
 

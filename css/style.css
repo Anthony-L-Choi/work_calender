@@ -195,6 +195,11 @@ button { font: inherit; color: inherit; }
 }
 .sheet-actions .primary { background: var(--primary); border-color: var(--primary); color: #fff; }
 .sheet-actions [hidden] { display: none; }
+/* 저장 버튼: 두 글자를 한 칸에 겹치고 하나만 보인다. 저장 직후에는 saved로 '저장됨'을 보인다 */
+.save-btn { display: grid; place-items: center; }
+.save-btn > span { grid-area: 1 / 1; }
+.save-btn > span:last-child, .save-btn.saved > span:first-child { visibility: hidden; }
+.save-btn.saved > span:last-child { visibility: visible; }
 
 /* 상단 바 버튼 */
 .topbar { display: flex; align-items: center; gap: 8px; }
