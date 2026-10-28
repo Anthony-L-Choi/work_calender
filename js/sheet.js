@@ -14,6 +14,7 @@ const endInput = /** @type {HTMLInputElement} */ ($('in-end'));
 const excludeInput = /** @type {HTMLInputElement} */ ($('in-exclude'));
 const annualInput = /** @type {HTMLInputElement} */ ($('in-annual'));
 const ddayInput = /** @type {HTMLInputElement} */ ($('in-dday'));
+const saveButton = /** @type {HTMLButtonElement} */ ($('btn-save'));
 
 /** @typedef {{holidayName?: string, isDDay?: boolean, onChange: () => void, onShow?: (date: string) => void}} SheetOptions */
 
@@ -21,6 +22,8 @@ const ddayInput = /** @type {HTMLInputElement} */ ($('in-dday'));
 let current = null;
 /** 불러오거나 저장한 직후의 칸 값. 지금 값과 다르면 저장하지 않은 변경이 있다 */
 let loaded = '';
+/** 그 날짜에 저장한 기록이 없으면 true. 기본값 그대로도 저장할 수 있게 버튼을 켜 둔다 */
+let unsaved = false;
 /**
  * 저장하지 않은 변경이 있을 때 누른 다음 날짜. [저장]이나 [버리기]를 고르면 그 날짜를 띄운다
  * @type {{date: string, options: SheetOptions} | null}
@@ -69,6 +72,12 @@ function updateHint() {
   const workEl = $('hint-work');
   workEl.className = `hint-work ${dayTone(work)}`;
   workEl.replaceChildren('근무', Object.assign(document.createElement('strong'), { textContent: formatMinutes(work) }));
+}
+
+/** 저장 버튼: 고친 값이 있거나 아직 저장하지 않은 날만 켠다. 다시 고치면 '저장됨'을 바로 내린다 */
+function updateSaveButton() {
+  saveButton.disabled = !current || !(unsaved || snapshot() !== loaded);
+  if (!saveButton.disabled) saveButton.classList.remove('saved');
 }
 
 /** 연차나 D-Day를 고르면 근무 시각 칸을 비우고 막는다 */
@@ -128,6 +137,8 @@ function load(date, { holidayName, isDDay = false, onChange, onShow }) {
   showErrors({});
   updateHint();
   loaded = snapshot();
+  unsaved = !record;
+  updateSaveButton();
   onShow?.(date);
 }
 
@@ -201,6 +212,7 @@ form.addEventListener('input', (event) => {
     if (!deleting && !last && /^\d{2}:\d{2}$/.test(target.value) && normalizeTime(target.value)) moveNext(target);
   }
   updateHint();
+  updateSaveButton();
 });
 
 // 키보드의 다음(Enter): 다음 칸으로 옮긴다. 제외 칸의 완료(Enter): 키보드를 닫고 저장 버튼처럼 저장한다
@@ -229,12 +241,13 @@ for (const input of timeInputs) {
     const normalized = normalizeTime(input.value);
     if (normalized) input.value = normalized;
     updateHint();
+    updateSaveButton();
   });
 }
 
 /** 검증을 통과하면 저장하고 요약·달력을 다시 그린다. 시트는 닫지 않는다 */
 function save() {
-  if (!current) return false;
+  if (!current || saveButton.disabled) return false;
   const input = readForm();
   const errors = validateRecord(input);
   showErrors(errors);
@@ -248,12 +261,13 @@ function save() {
     leave: input.leave,
   });
   loaded = snapshot();
+  unsaved = false;
   current.onChange();
-  // 저장 버튼에 잠깐 '저장됨'을 보인다
-  const button = $('btn-save');
-  button.classList.add('saved');
+  // 버튼을 끄고 잠깐 '저장됨'을 보인다
+  updateSaveButton();
+  saveButton.classList.add('saved');
   clearTimeout(savedTimer);
-  savedTimer = window.setTimeout(() => { button.classList.remove('saved'); }, 1200);
+  savedTimer = window.setTimeout(() => { saveButton.classList.remove('saved'); }, 1200);
   return true;
 }
 
@@ -267,6 +281,7 @@ $('btn-reset').addEventListener('click', () => {
   fillDefaults();
   showErrors({});
   updateHint();
+  updateSaveButton();
 });
 
 // 저장하지 않은 변경 묻기: [저장]은 저장에 성공하면 누른 날짜로, 실패하면 오류를 보이고 지금 날짜에 머문다

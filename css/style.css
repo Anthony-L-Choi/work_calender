@@ -200,6 +200,8 @@ button { font: inherit; color: inherit; }
 .save-btn > span { grid-area: 1 / 1; }
 .save-btn > span:last-child, .save-btn.saved > span:first-child { visibility: hidden; }
 .save-btn.saved > span:last-child { visibility: visible; }
+/* 고친 값이 없으면 흐리게. '저장됨'을 보이는 동안은 흐리게 하지 않는다 */
+.save-btn:disabled:not(.saved) { opacity: .45; }
 
 /* 상단 바 버튼 */
 .topbar { display: flex; align-items: center; gap: 8px; }
